@@ -1,7 +1,195 @@
 ﻿@page "/"
 
-<PageTitle>Home</PageTitle>
+<PageTitle>Thư viện Đại học - Library Portal</PageTitle>
 
-<h1>Hello, world!</h1>
+<section class="university-library-home">
 
-Welcome to your new app.
+    <!-- HERO -->
+    <section class="library-hero">
+        <div class="hero-left">
+            <span class="hero-label">
+                <i class="bi bi-mortarboard"></i>
+                University Library Portal
+            </span>
+
+            <h1>Thư viện Đại học</h1>
+
+            <p>
+                Cổng tra cứu và quản lý tài nguyên học tập dành cho sinh viên,
+                giảng viên và cán bộ nhà trường.
+            </p>
+
+            <div class="search-area">
+                <i class="bi bi-search"></i>
+                <input type="text" placeholder="Tìm kiếm sách, giáo trình, tài liệu..." />
+                <button>Tìm kiếm</button>
+            </div>
+
+            <div class="hero-actions">
+                <a href="books" class="btn-primary-home">
+                    <i class="bi bi-book"></i>
+                    Khám phá kho sách
+                </a>
+
+                <a href="borrow-request" class="btn-secondary-home">
+                    <i class="bi bi-send"></i>
+                    Yêu cầu mượn sách
+                </a>
+            </div>
+        </div>
+
+        <div class="hero-right">
+            <div class="library-card">
+                <div class="library-card-header">
+                    <i class="bi bi-building"></i>
+                    <span>Thư viện trung tâm</span>
+                </div>
+
+                <h3>Không gian học tập hiện đại</h3>
+
+                <p>
+                    Hỗ trợ sinh viên tra cứu tài liệu, mượn sách,
+                    sử dụng phòng đọc và tiếp cận nguồn học liệu số.
+                </p>
+
+                <div class="open-time">
+                    <div>
+                        <span>Giờ mở cửa</span>
+                        <strong>07:30 - 20:30</strong>
+                    </div>
+
+                    <div>
+                        <span>Thứ 2 - Thứ 7</span>
+                        <strong>Phục vụ tại thư viện</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- QUICK STATS -->
+    <section class="library-stats">
+        <div class="stat-box">
+            <i class="bi bi-journals"></i>
+            <div>
+                <h3>25,000+</h3>
+                <p>Đầu sách</p>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <i class="bi bi-file-earmark-text"></i>
+            <div>
+                <h3>8,500+</h3>
+                <p>Tài liệu số</p>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <i class="bi bi-people"></i>
+            <div>
+                <h3>12,000+</h3>
+                <p>Bạn đọc</p>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <i class="bi bi-door-open"></i>
+            <div>
+                <h3>6</h3>
+                <p>Phòng đọc</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- MAIN CONTENT -->
+    <section class="library-content">
+
+        <div class="service-panel">
+            <div class="section-title">
+                <h2>Dịch vụ thư viện</h2>
+                <p>Các chức năng hỗ trợ học tập và nghiên cứu trong trường.</p>
+            </div>
+
+            <div class="service-grid">
+                <a href="books" class="service-card">
+                    <i class="bi bi-book"></i>
+                    <h3>Tra cứu sách</h3>
+                    <p>Tìm kiếm giáo trình, sách tham khảo, tài liệu chuyên ngành.</p>
+                </a>
+
+                <a href="borrow-request" class="service-card">
+                    <i class="bi bi-arrow-left-right"></i>
+                    <h3>Mượn trả sách</h3>
+                    <p>Gửi yêu cầu mượn và theo dõi trạng thái xử lý.</p>
+                </a>
+
+                <a href="borrow-history" class="service-card">
+                    <i class="bi bi-clock-history"></i>
+                    <h3>Lịch sử mượn</h3>
+                    <p>Xem lại các tài liệu đã mượn và hạn trả sách.</p>
+                </a>
+
+                <a href="search-books" class="service-card">
+                    <i class="bi bi-laptop"></i>
+                    <h3>Tài nguyên số</h3>
+                    <p>Truy cập tài liệu điện tử, luận văn và học liệu trực tuyến.</p>
+                </a>
+            </div>
+        </div>
+
+        <aside class="notice-panel">
+            <div class="section-title">
+                <h2>Thông báo</h2>
+                <p>Cập nhật từ thư viện.</p>
+            </div>
+
+            <div class="notice-list">
+                <div class="notice-item">
+                    <span class="notice-date">15/05</span>
+                    <div>
+                        <h4>Gia hạn thời gian mượn sách cuối kỳ</h4>
+                        <p>Sinh viên có thể gia hạn sách trực tuyến trong tài khoản cá nhân.</p>
+                    </div>
+                </div>
+
+                <div class="notice-item">
+                    <span class="notice-date">12/05</span>
+                    <div>
+                        <h4>Bổ sung giáo trình học kỳ mới</h4>
+                        <p>Thư viện đã cập nhật thêm tài liệu cho các ngành CNTT, Kinh tế và Ngôn ngữ.</p>
+                    </div>
+                </div>
+
+                <div class="notice-item">
+                    <span class="notice-date">08/05</span>
+                    <div>
+                        <h4>Nhắc trả sách quá hạn</h4>
+                        <p>Bạn đọc vui lòng kiểm tra lịch sử mượn để tránh phát sinh phí phạt.</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+    </section>
+
+    <!-- ABOUT -->
+    <section class="about-library">
+        <div>
+            <h2>Không gian học tập dành cho sinh viên</h2>
+            <p>
+                Thư viện đại học không chỉ là nơi lưu trữ sách mà còn là trung tâm hỗ trợ học tập,
+                nghiên cứu và phát triển tri thức. Hệ thống giúp sinh viên dễ dàng tìm kiếm tài liệu,
+                gửi yêu cầu mượn sách và theo dõi quá trình sử dụng tài nguyên thư viện.
+            </p>
+        </div>
+
+        <div class="about-actions">
+            <a href="books">
+                Xem kho tài liệu
+                <i class="bi bi-arrow-right"></i>
+            </a>
+        </div>
+    </section>
+
+</section>
