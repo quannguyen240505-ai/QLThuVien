@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="APIQLTV/APIQLTV.csproj" />
+  <Project Path="AppQLTV/AppQLTV.csproj" />
+</Solution>
