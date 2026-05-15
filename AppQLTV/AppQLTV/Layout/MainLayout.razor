@@ -1,16 +1,51 @@
 ﻿@inherits LayoutComponentBase
+@inject NavigationManager Navigation
+
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
 
-    <main>
-        <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-        </div>
+    <aside class="sidebar @(isCollapsed ? "collapsed" : "")">
+        <NavMenu IsCollapsed="isCollapsed"
+                 ToggleSidebar="ToggleSidebar" />
+    </aside>
 
-        <article class="content px-4">
+    <main class="main">
+
+        <header class="topbar">
+            <div class="topbar-left">
+                <h2>LibraryPro</h2>
+                <p>Nền tảng quản lý thư viện trực tuyến</p>
+            </div>
+
+            <div class="topbar-right">
+                <button class="notification-btn">
+                    <i class="bi bi-bell"></i>
+                </button>
+
+                <button class="login-btn" @onclick="GoToLogin">
+                    <i class="bi bi-person-circle"></i>
+                    <span>Đăng nhập</span>
+                </button>
+            </div>
+        </header>
+
+        <article class="content">
             @Body
         </article>
+
     </main>
+
 </div>
+
+@code {
+    private bool isCollapsed = false;
+
+    private void ToggleSidebar()
+    {
+        isCollapsed = !isCollapsed;
+    }
+
+    private void GoToLogin()
+    {
+        Navigation.NavigateTo("/login");
+    }
+}
