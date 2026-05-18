@@ -1,5 +1,6 @@
 ﻿@inherits LayoutComponentBase
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <div class="page">
 
@@ -21,10 +22,30 @@
                     <i class="bi bi-bell"></i>
                 </button>
 
-                <button class="login-btn" @onclick="GoToLogin">
-                    <i class="bi bi-person-circle"></i>
-                    <span>Đăng nhập</span>
-                </button>
+                @if (isLoggedIn)
+                {
+                    <div class="user-box">
+                        <div class="user-avatar">
+                            @GetAvatarText()
+                        </div>
+
+                        <div class="user-info">
+                            <strong>@username</strong>
+                            <span>@role</span>
+                        </div>
+
+                        <button class="logout-btn" @onclick="Logout">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </button>
+                    </div>
+                }
+                else
+                {
+                    <button class="login-btn" @onclick="GoToLogin">
+                        <i class="bi bi-person-circle"></i>
+                        <span>Đăng nhập</span>
+                    </button>
+                }
             </div>
         </header>
 
@@ -38,6 +59,27 @@
 
 @code {
     private bool isCollapsed = false;
+    private bool isLoggedIn = false;
+    private string username = "";
+    private string role = "";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await LoadUserFromLocalStorage();
+            StateHasChanged();
+        }
+    }
+
+    private async Task LoadUserFromLocalStorage()
+    {
+        var token = await JS.InvokeAsync<string?>("localStorage.getItem", "authToken");
+        username = await JS.InvokeAsync<string?>("localStorage.getItem", "username") ?? "";
+        role = await JS.InvokeAsync<string?>("localStorage.getItem", "role") ?? "";
+
+        isLoggedIn = !string.IsNullOrWhiteSpace(token);
+    }
 
     private void ToggleSidebar()
     {
@@ -47,5 +89,29 @@
     private void GoToLogin()
     {
         Navigation.NavigateTo("/login");
+    }
+
+    private async Task Logout()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "username");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "gmail");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "role");
+
+        isLoggedIn = false;
+        username = "";
+        role = "";
+
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+
+    private string GetAvatarText()
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return "U";
+        }
+
+        return username.Substring(0, 1).ToUpper();
     }
 }
