@@ -1,6 +1,5 @@
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-}
+    font-family: "Segoe UI", Arial, sans-serif;
 
 h1:focus {
     outline: none;
