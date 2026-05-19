@@ -11,5 +11,6 @@
         public DateTime DateOfBirth { get; set; }
 
         public string Role { get; set; } = string.Empty;
+        public DateTime Expiration { get; set; }
     }
 }

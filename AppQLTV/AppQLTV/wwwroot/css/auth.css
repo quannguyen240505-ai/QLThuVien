@@ -197,3 +197,37 @@
     .auth-divider span {
         white-space: nowrap;
     }
+.auth-success {
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: #dcfce7;
+    color: #166534;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 18px;
+}
+
+.remember-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: -4px 0 16px;
+    font-size: 14px;
+}
+
+    .remember-row a {
+        color: #2563eb;
+        font-weight: 800;
+        text-decoration: none;
+    }
+
+        .remember-row a:hover {
+            text-decoration: underline;
+        }
+
+.pin-input {
+    text-align: center;
+    letter-spacing: 8px;
+    font-size: 18px;
+    font-weight: 900;
+}

@@ -1,4 +1,5 @@
 ﻿@inherits LayoutComponentBase
+@implements IAsyncDisposable
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
 
@@ -63,11 +64,15 @@
     private string username = "";
     private string role = "";
 
+    private PeriodicTimer? tokenTimer;
+    private CancellationTokenSource? timerCts;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
             await LoadUserFromLocalStorage();
+            StartTokenChecker();
             StateHasChanged();
         }
     }
@@ -75,10 +80,96 @@
     private async Task LoadUserFromLocalStorage()
     {
         var token = await JS.InvokeAsync<string?>("localStorage.getItem", "authToken");
+        var expirationText = await JS.InvokeAsync<string?>("localStorage.getItem", "tokenExpiration");
+
+        if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(expirationText))
+        {
+            ClearUserState();
+            return;
+        }
+
+        if (!DateTime.TryParse(expirationText, out DateTime expiration))
+        {
+            await ClearAuthData();
+            return;
+        }
+
+        if (DateTime.Now >= expiration)
+        {
+            await HandleTokenExpired();
+            return;
+        }
+
         username = await JS.InvokeAsync<string?>("localStorage.getItem", "username") ?? "";
         role = await JS.InvokeAsync<string?>("localStorage.getItem", "role") ?? "";
 
-        isLoggedIn = !string.IsNullOrWhiteSpace(token);
+        isLoggedIn = true;
+    }
+
+    private void StartTokenChecker()
+    {
+        timerCts = new CancellationTokenSource();
+
+        // Kiểm tra mỗi 10 giây
+        tokenTimer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+
+        _ = CheckTokenLoop();
+    }
+
+    private async Task CheckTokenLoop()
+    {
+        if (tokenTimer == null || timerCts == null)
+        {
+            return;
+        }
+
+        try
+        {
+            while (await tokenTimer.WaitForNextTickAsync(timerCts.Token))
+            {
+                await InvokeAsync(async () =>
+                {
+                    if (!isLoggedIn)
+                    {
+                        return;
+                    }
+
+                    var expirationText = await JS.InvokeAsync<string?>("localStorage.getItem", "tokenExpiration");
+
+                    if (string.IsNullOrWhiteSpace(expirationText))
+                    {
+                        await HandleTokenExpired();
+                        return;
+                    }
+
+                    if (!DateTime.TryParse(expirationText, out DateTime expiration))
+                    {
+                        await HandleTokenExpired();
+                        return;
+                    }
+
+                    if (DateTime.Now >= expiration)
+                    {
+                        await HandleTokenExpired();
+                    }
+                });
+            }
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    private async Task HandleTokenExpired()
+    {
+        await ClearAuthData();
+
+        await JS.InvokeVoidAsync(
+            "alert",
+            "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại."
+        );
+
+        Navigation.NavigateTo("/login", forceLoad: true);
     }
 
     private void ToggleSidebar()
@@ -93,16 +184,27 @@
 
     private async Task Logout()
     {
+        await ClearAuthData();
+        Navigation.NavigateTo("/", forceLoad: true);
+    }
+
+    private async Task ClearAuthData()
+    {
         await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
         await JS.InvokeVoidAsync("localStorage.removeItem", "username");
         await JS.InvokeVoidAsync("localStorage.removeItem", "gmail");
         await JS.InvokeVoidAsync("localStorage.removeItem", "role");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "tokenExpiration");
 
+        ClearUserState();
+        StateHasChanged();
+    }
+
+    private void ClearUserState()
+    {
         isLoggedIn = false;
         username = "";
         role = "";
-
-        Navigation.NavigateTo("/", forceLoad: true);
     }
 
     private string GetAvatarText()
@@ -113,5 +215,16 @@
         }
 
         return username.Substring(0, 1).ToUpper();
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (timerCts != null)
+        {
+            await timerCts.CancelAsync();
+            timerCts.Dispose();
+        }
+
+        tokenTimer?.Dispose();
     }
 }

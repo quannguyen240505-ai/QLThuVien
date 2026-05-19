@@ -16,5 +16,11 @@
         public string Role { get; set; } = "Member";
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        public string? ResetPasswordPin { get; set; }
+
+        public DateTime? ResetPasswordPinExpires { get; set; }
+
+        public bool IsResetPasswordPinUsed { get; set; } = false;
     }
 }
