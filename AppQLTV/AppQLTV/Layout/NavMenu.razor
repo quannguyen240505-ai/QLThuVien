@@ -168,25 +168,54 @@
     {
         if (firstRender)
         {
-            var token = await JS.InvokeAsync<string?>("localStorage.getItem", "authToken");
-            role = await JS.InvokeAsync<string?>("localStorage.getItem", "role") ?? "";
-
-            isLoggedIn = !string.IsNullOrWhiteSpace(token);
-
+            await CheckLoginStatus();
             StateHasChanged();
         }
     }
 
-    private async Task Logout()
+    private async Task CheckLoginStatus()
+    {
+        var token = await JS.InvokeAsync<string?>("localStorage.getItem", "authToken");
+        var expirationText = await JS.InvokeAsync<string?>("localStorage.getItem", "tokenExpiration");
+
+        if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(expirationText))
+        {
+            role = "";
+            isLoggedIn = false;
+            return;
+        }
+
+        if (!DateTime.TryParse(expirationText, out DateTime expiration))
+        {
+            await ClearAuthData();
+            return;
+        }
+
+        if (DateTime.Now >= expiration)
+        {
+            await ClearAuthData();
+            return;
+        }
+
+        role = await JS.InvokeAsync<string?>("localStorage.getItem", "role") ?? "";
+        isLoggedIn = true;
+    }
+
+    private async Task ClearAuthData()
     {
         await JS.InvokeVoidAsync("localStorage.removeItem", "authToken");
         await JS.InvokeVoidAsync("localStorage.removeItem", "username");
         await JS.InvokeVoidAsync("localStorage.removeItem", "gmail");
         await JS.InvokeVoidAsync("localStorage.removeItem", "role");
+        await JS.InvokeVoidAsync("localStorage.removeItem", "tokenExpiration");
 
         role = "";
         isLoggedIn = false;
+    }
 
+    private async Task Logout()
+    {
+        await ClearAuthData();
         Navigation.NavigateTo("/", forceLoad: true);
     }
 }

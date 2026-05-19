@@ -1,11 +1,12 @@
 ﻿using APIQLTV.DTOs.Auth;
 using APIQLTV.Models;
+using APIQLTV.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.EntityFrameworkCore;
 
 namespace APIQLTV.Controllers
 {
@@ -15,11 +16,13 @@ namespace APIQLTV.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
+        private readonly EmailService _emailService;
 
-        public AuthController(AppDbContext context, IConfiguration configuration)
+        public AuthController(AppDbContext context, IConfiguration configuration, EmailService emailService)
         {
             _context = context;
             _configuration = configuration;
+            _emailService = emailService;
         }
 
         // POST: api/auth/register
@@ -60,15 +63,16 @@ namespace APIQLTV.Controllers
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
 
-            string token = CreateToken(user);
+            var tokenResult = CreateToken(user);
 
             return Ok(new AuthResponse
             {
-                Token = token,
+                Token = tokenResult.Token,
                 Username = user.Username,
                 Gmail = user.Gmail,
                 DateOfBirth = user.DateOfBirth,
-                Role = user.Role
+                Role = user.Role,
+                Expiration = tokenResult.Expiration
             });
         }
 
@@ -94,33 +98,36 @@ namespace APIQLTV.Controllers
                 return BadRequest("Sai tài khoản hoặc mật khẩu.");
             }
 
-            string token = CreateToken(user);
+            var tokenResult = CreateToken(user);
 
             return Ok(new AuthResponse
             {
-                Token = token,
+                Token = tokenResult.Token,
                 Username = user.Username,
                 Gmail = user.Gmail,
                 DateOfBirth = user.DateOfBirth,
-                Role = user.Role
+                Role = user.Role,
+                Expiration = tokenResult.Expiration
             });
         }
 
-        private string CreateToken(AppUser user)
+        private TokenResult CreateToken(AppUser user)
         {
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Gmail),
-                new Claim(ClaimTypes.Role, user.Role),
-                new Claim("DateOfBirth", user.DateOfBirth.ToString("yyyy-MM-dd"))
-            };
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Name, user.Username),
+        new Claim(ClaimTypes.Email, user.Gmail),
+        new Claim(ClaimTypes.Role, user.Role),
+        new Claim("DateOfBirth", user.DateOfBirth.ToString("yyyy-MM-dd"))
+    };
 
             var jwtKey = _configuration["Jwt:Key"];
             var jwtIssuer = _configuration["Jwt:Issuer"];
             var jwtAudience = _configuration["Jwt:Audience"];
             var expireMinutes = int.Parse(_configuration["Jwt:ExpireMinutes"]!);
+
+            var expiration = DateTime.Now.AddMinutes(expireMinutes);
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(jwtKey!)
@@ -135,11 +142,93 @@ namespace APIQLTV.Controllers
                 issuer: jwtIssuer,
                 audience: jwtAudience,
                 claims: claims,
-                expires: DateTime.Now.AddMinutes(expireMinutes),
+                expires: expiration,
                 signingCredentials: credentials
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            return new TokenResult
+            {
+                Token = new JwtSecurityTokenHandler().WriteToken(token),
+                Expiration = expiration
+            };
+        }
+
+        private class TokenResult
+        {
+            public string Token { get; set; } = string.Empty;
+            public DateTime Expiration { get; set; }
+        }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> ForgotPassword(ForgotPasswordRequest request)
+        {
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Gmail == request.Gmail);
+
+            if (user == null)
+            {
+                return BadRequest("Gmail không tồn tại trong hệ thống.");
+            }
+
+            var random = new Random();
+            string pin = random.Next(100000, 999999).ToString();
+
+            user.ResetPasswordPin = pin;
+            user.ResetPasswordPinExpires = DateTime.Now.AddMinutes(5);
+            user.IsResetPasswordPinUsed = false;
+
+            await _context.SaveChangesAsync();
+
+            await _emailService.SendResetPasswordPinAsync(user.Gmail, pin);
+
+            return Ok("Mã PIN đã được gửi về Gmail.");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
+        {
+            if (request.NewPassword != request.ConfirmNewPassword)
+            {
+                return BadRequest("Mật khẩu xác nhận không khớp.");
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Gmail == request.Gmail);
+
+            if (user == null)
+            {
+                return BadRequest("Gmail không tồn tại trong hệ thống.");
+            }
+
+            if (user.IsResetPasswordPinUsed)
+            {
+                return BadRequest("Mã PIN đã được sử dụng.");
+            }
+
+            if (string.IsNullOrWhiteSpace(user.ResetPasswordPin))
+            {
+                return BadRequest("Bạn chưa yêu cầu mã PIN.");
+            }
+
+            if (user.ResetPasswordPinExpires == null || DateTime.Now > user.ResetPasswordPinExpires)
+            {
+                return BadRequest("Mã PIN đã hết hạn.");
+            }
+
+            if (user.ResetPasswordPin != request.Pin)
+            {
+                return BadRequest("Mã PIN không đúng.");
+            }
+
+            user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+
+            user.IsResetPasswordPinUsed = true;
+            user.ResetPasswordPin = null;
+            user.ResetPasswordPinExpires = null;
+
+            await _context.SaveChangesAsync();
+
+            return Ok("Đặt lại mật khẩu thành công.");
         }
     }
 }

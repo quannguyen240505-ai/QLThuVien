@@ -64,6 +64,10 @@
             <button class="auth-submit" type="submit" disabled="@isLoading">
                 @(isLoading ? "Đang đăng nhập..." : "Đăng nhập")
             </button>
+            <div class="remember-row">
+                <span></span>
+                <a href="forgot-password">Quên mật khẩu?</a>
+            </div>
         </EditForm>
 
 
@@ -107,6 +111,7 @@
             await JS.InvokeVoidAsync("localStorage.setItem", "username", result.Username);
             await JS.InvokeVoidAsync("localStorage.setItem", "gmail", result.Gmail);
             await JS.InvokeVoidAsync("localStorage.setItem", "role", result.Role);
+            await JS.InvokeVoidAsync("localStorage.setItem", "tokenExpiration", result.Expiration.ToString("O"));
 
             Navigation.NavigateTo("/", forceLoad: true);
         }
