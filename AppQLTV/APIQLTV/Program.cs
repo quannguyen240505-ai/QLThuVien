@@ -1,3 +1,4 @@
+using APIQLTV.Data;
 using APIQLTV.Models;
 using APIQLTV.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -71,9 +72,15 @@ builder.Services.AddAuthentication(options =>
 });
 
 builder.Services.AddAuthorization();
+builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<EmailService>();
 
 var app = builder.Build();
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    await DbInitializer.InitializeAsync(context);
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

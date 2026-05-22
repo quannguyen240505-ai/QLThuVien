@@ -1,5 +1,6 @@
 ﻿using APIQLTV.Models;
 using Microsoft.EntityFrameworkCore;
+using APIQLTV.Models.Books;
 namespace APIQLTV.Models
 {
     public class AppDbContext  : DbContext
@@ -8,5 +9,6 @@ namespace APIQLTV.Models
         {
         }
         public DbSet<AppUser> Users { get; set; }
+        public DbSet<Book> Books { get; set; }
     }
 }

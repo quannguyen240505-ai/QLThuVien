@@ -1,0 +1,48 @@
+﻿@page "/books/detail/{id:int}"
+@using AppQLTV.Models
+@using AppQLTV.Services
+@inject IBookService BookService
+@inject NavigationManager Navigation
+
+<h3>🔍 Chi tiết sách</h3>
+
+@if (book == null)
+{
+    <p>Đang tải...</p>
+}
+else
+{
+    <dl class="row">
+        <dt class="col-sm-3">Mã sách</dt>
+        <dd class="col-sm-9">@book.BookId</dd>
+        <dt class="col-sm-3">Tiêu đề</dt>
+        <dd class="col-sm-9">@book.Title</dd>
+        <dt class="col-sm-3">Tác giả</dt>
+        <dd class="col-sm-9">@book.Author</dd>
+        <dt class="col-sm-3">Thể loại</dt>
+        <dd class="col-sm-9">@book.Category</dd>
+        <dt class="col-sm-3">Nhà xuất bản</dt>
+        <dd class="col-sm-9">@book.Publisher</dd>
+        <dt class="col-sm-3">Năm xuất bản</dt>
+        <dd class="col-sm-9">@book.PublishYear</dd>
+        <dt class="col-sm-3">Tổng số lượng</dt>
+        <dd class="col-sm-9">@book.Quantity</dd>
+        <dt class="col-sm-3">Còn lại</dt>
+        <dd class="col-sm-9">@book.AvailableQuantity</dd>
+        <dt class="col-sm-3">Mô tả</dt>
+        <dd class="col-sm-9">@book.Description</dd>
+        <dt class="col-sm-3">Ảnh</dt>
+        <dd class="col-sm-9"><img src="@book.ImageUrl" style="max-width:200px" /></dd>
+    </dl>
+    <a href="/books" class="btn btn-secondary">Quay lại danh sách</a>
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+    private Book? book;
+
+    protected override async Task OnInitializedAsync()
+    {
+        book = await BookService.GetBookByIdAsync(id);
+    }
+}

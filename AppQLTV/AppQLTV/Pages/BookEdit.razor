@@ -1,0 +1,71 @@
+﻿@page "/books/edit/{id:int}"
+@using AppQLTV.Models
+@using AppQLTV.Services
+@inject IBookService BookService
+@inject NavigationManager Navigation
+
+<h3>✏️ Chỉnh sửa sách</h3>
+
+@if (book == null)
+{
+    <p>Đang tải...</p>
+}
+else
+{
+    <EditForm Model="@book" OnValidSubmit="@HandleUpdate">
+        <input type="hidden" @bind-value="book.BookId" />
+        <div class="mb-3">
+            <label>Tiêu đề</label>
+            <InputText @bind-Value="book.Title" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Tác giả</label>
+            <InputText @bind-Value="book.Author" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Thể loại</label>
+            <InputText @bind-Value="book.Category" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Nhà xuất bản</label>
+            <InputText @bind-Value="book.Publisher" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Năm xuất bản</label>
+            <InputNumber @bind-Value="book.PublishYear" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>Số lượng (tổng)</label>
+            <InputNumber @bind-Value="book.Quantity" class="form-control" min="0" />
+        </div>
+        <div class="mb-3">
+            <label>Mô tả</label>
+            <InputTextArea @bind-Value="book.Description" class="form-control" />
+        </div>
+        <div class="mb-3">
+            <label>URL ảnh</label>
+            <InputText @bind-Value="book.ImageUrl" class="form-control" />
+        </div>
+        <button type="submit" class="btn btn-primary">Cập nhật</button>
+        <a href="/books" class="btn btn-secondary">Hủy</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+    private Book? book;
+
+    protected override async Task OnInitializedAsync()
+    {
+        book = await BookService.GetBookByIdAsync(id);
+    }
+
+    private async Task HandleUpdate()
+    {
+        if (book != null)
+        {
+            await BookService.UpdateBookAsync(book);
+            Navigation.NavigateTo("/books");
+        }
+    }
+}
