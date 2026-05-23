@@ -1,4 +1,4 @@
-﻿@page "/books/detail/{id:int}"
+﻿@page "/book-detail/{id:int}"
 @using AppQLTV.Models
 @using AppQLTV.Services
 @inject IBookService BookService
@@ -32,7 +32,7 @@ else
         <dt class="col-sm-3">Mô tả</dt>
         <dd class="col-sm-9">@book.Description</dd>
         <dt class="col-sm-3">Ảnh</dt>
-        <dd class="col-sm-9"><img src="@book.ImageUrl" style="max-width:200px" /></dd>
+        <dd class="col-sm-9"><img src="@book.ImageUrl" style="max-width:200px" alt="Bìa sách" /></dd>
     </dl>
     <a href="/books" class="btn btn-secondary">Quay lại danh sách</a>
 }

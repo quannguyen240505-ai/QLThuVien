@@ -2,7 +2,6 @@
 @using AppQLTV.Models
 @using AppQLTV.Services
 @inject IBookService BookService
-@inject IJSRuntime js          // <-- THÊM DÒNG NÀY
 @inject NavigationManager Navigation
 
 <h3>📚 Danh sách sách</h3>
@@ -14,9 +13,6 @@
     <div class="col-md-2">
         <button class="btn btn-primary" @onclick="Search">Tìm</button>
         <button class="btn btn-secondary ms-2" @onclick="LoadBooks">Tải lại</button>
-    </div>
-    <div class="col-md-4 text-end">
-        <a href="/books/create" class="btn btn-success">+ Thêm sách mới</a>
     </div>
 </div>
 
@@ -30,30 +26,36 @@ else if (!books.Any())
 }
 else
 {
-    <table class="table table-bordered table-striped">
-        <thead>
-            <tr><th>ID</th><th>Tiêu đề</th><th>Tác giả</th><th>Thể loại</th><th>Năm XB</th><th>Tổng số</th><th>Còn lại</th><th>Hành động</th></tr>
-        </thead>
-        <tbody>
-            @foreach (var book in books)
-            {
-                <tr>
-                    <td>@book.BookId</td>
-                    <td>@book.Title</td>
-                    <td>@book.Author</td>
-                    <td>@book.Category</td>
-                    <td>@book.PublishYear</td>
-                    <td>@book.Quantity</td>
-                    <td>@book.AvailableQuantity</td>
-                    <td>
-                        <a href="/books/edit/@book.BookId" class="btn btn-sm btn-warning">Sửa</a>
-                        <button class="btn btn-sm btn-danger ms-1" @onclick="() => Delete(book.BookId)">Xóa</button>
-                        <a href="/books/detail/@book.BookId" class="btn btn-sm btn-info ms-1">Chi tiết</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <div class="row">
+        @foreach (var book in books)
+        {
+            <div class="col-md-3 mb-4">
+                <div class="card h-100 shadow-sm">
+                    @if (!string.IsNullOrEmpty(book.ImageUrl))
+                    {
+                        <img src="@book.ImageUrl" class="card-img-top" alt="@book.Title" style="height: 200px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <span class="text-muted">📖 No image</span>
+                        </div>
+                    }
+                    <div class="card-body">
+                        <h5 class="card-title">@book.Title</h5>
+                        <p class="card-text">
+                            <strong>Tác giả:</strong> @book.Author<br />
+                            <strong>Thể loại:</strong> @book.Category<br />
+                            <strong>Còn lại:</strong> @book.AvailableQuantity
+                        </p>
+                    </div>
+                    <div class="card-footer bg-transparent border-top-0">
+                        <a href="/book-detail/@book.BookId" class="btn btn-sm btn-info w-100">🔍 Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 }
 
 @code {
@@ -76,14 +78,5 @@ else
             await LoadBooks();
         else
             books = await BookService.SearchBooksAsync(keyword);
-    }
-
-    private async Task Delete(int id)
-    {
-        if (await js.InvokeAsync<bool>("confirm", "Bạn có chắc muốn xóa sách này?"))
-        {
-            await BookService.DeleteBookAsync(id);
-            await LoadBooks();
-        }
     }
 }
