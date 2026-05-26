@@ -7,16 +7,23 @@
 
 <h3>📖 Quản lý sách</h3>
 
-<div class="row mb-3">
-    <div class="col-md-6">
+<div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+
+    <!-- CỤM TÌM KIẾM BÊN TRÁI -->
+    <!-- Sử dụng d-flex và gap-2 để các phần tử tự động cách đều nhau 8px -->
+    <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 600px;">
         <input type="text" class="form-control" @bind="keyword" @bind:event="oninput" placeholder="Tìm theo tên, tác giả, thể loại..." />
+
+        <!-- Lưu ý: Thêm m-0 (margin: 0) để triệt tiêu cái margin trong CSS gây lệch nút -->
+        <button class="btn btn-primary m-0 px-4 text-nowrap" @onclick="Search">Tìm</button>
+        <button class="btn btn-secondary m-0 px-3 text-nowrap" @onclick="LoadBooks">🔄 Tải lại</button>
     </div>
-    <div class="col-md-2">
-        <button class="btn btn-primary" @onclick="Search">Tìm</button>
-        <button class="btn btn-secondary ms-2" @onclick="LoadBooks">Tải lại</button>
-    </div>
-    <div class="col-md-4 text-end">
-        <a href="/manage-books/create" class="btn btn-success">+ Thêm sách mới</a>
+
+    <!-- CỤM THÊM SÁCH MỚI BÊN PHẢI -->
+    <div>
+        <a href="/books/create" class="btn btn-success m-0 text-nowrap fw-bold shadow-sm" style="border-radius: 0.75rem;">
+            + Thêm sách mới
+        </a>
     </div>
 </div>
 

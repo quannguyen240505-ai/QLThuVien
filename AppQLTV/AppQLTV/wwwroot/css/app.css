@@ -1,61 +1,255 @@
-/* Biến màu sắc */
+/* Sử dụng Font chữ Outfit - Một trong những font rất hiện đại và tròn trịa cho web */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
 :root {
-    --primary: #0d6efd;
-    --success: #198754;
-    --warning: #ffc107;
-    --danger: #dc3545;
-    --info: #0dcaf0;
-    --dark: #212529;
-    --light: #f8f9fa;
+    /* Palette màu sắc rực rỡ và có chiều sâu */
+    --primary: #4f46e5; /* Xanh tím chàm - rất sang trọng */
+    --primary-hover: #4338ca;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+    --dark: #0f172a;
+    --surface: #ffffff;
+    --background: #f8fafc;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    /* Thiết lập hệ thống bóng đổ đa tầng (Layered Shadows) */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --shadow-glow: 0 0 20px rgba(79, 70, 229, 0.25);
 }
 
-/* Card */
+body {
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--background);
+    color: var(--text-primary);
+    -webkit-font-smoothing: antialiased; /* Làm font chữ sắc nét hơn */
+}
+
+/* ==========================================
+   CARDS (Thẻ hiển thị mặc định)
+========================================== */
 .card {
-    border-radius: 0.75rem;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: var(--surface);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    border-radius: 1.25rem; /* Bo góc to hơn để nhìn thân thiện */
+    box-shadow: var(--shadow-md);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Hiệu ứng nảy (bouncy) nhẹ */
+    overflow: hidden;
 }
 
     .card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 0.5rem 1rem rgba(0,0,0,0.1);
+        transform: translateY(-8px) scale(1.01); /* Nổi bật hẳn lên khi hover */
+        box-shadow: var(--shadow-lg), var(--shadow-glow);
+        border-color: rgba(79, 70, 229, 0.2);
     }
 
 .card-img-top {
-    border-top-left-radius: 0.75rem;
-    border-top-right-radius: 0.75rem;
+    height: 240px;
     object-fit: cover;
-    height: 220px;
+    transition: transform 0.6s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.08); /* Ảnh bên trong zoom nhẹ đầy nghệ thuật */
+}
+
+.card-body {
+    padding: 1.75rem;
+    position: relative;
+    z-index: 1;
+    background: var(--surface);
 }
 
 .card-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.75rem;
 }
 
-/* Nút */
-.btn {
-    border-radius: 0.5rem;
-    font-weight: 500;
-    padding: 0.375rem 1rem;
+/* ==========================================
+   THẺ SÁCH (Dùng riêng cho trang danh sách Sách)
+========================================== */
+.book-card {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: var(--surface);
 }
+
+    .book-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+        border: 1px solid rgba(79, 70, 229, 0.1) !important;
+    }
+
+.book-img {
+    height: 240px;
+    width: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.book-card:hover .book-img {
+    transform: scale(1.05); /* Hiệu ứng zoom nhẹ ảnh */
+}
+
+.action-btn {
+    transition: all 0.2s ease;
+    border: 1px solid #e2e8f0;
+    color: var(--info);
+}
+
+    .action-btn:hover {
+        background-color: #eff6ff;
+        border-color: #bfdbfe;
+        color: #1d4ed8;
+    }
+
+/* ==========================================
+   BUTTONS (Nút bấm) & KHOẢNG CÁCH NÚT
+========================================== */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    padding: 0.6rem 1.5rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+/*    margin-right: 0.75rem;
+    margin-bottom: 0.75rem;*/
+}
+
+    .btn:last-child {
+        margin-right: 0;
+    }
+
+.action-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+    .action-buttons .btn {
+        margin: 0;
+    }
+
+/* Bố cục màu Nút bấm */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary) 0%, #818cf8 100%);
+    color: white;
+}
+
+    .btn-primary:hover {
+        box-shadow: 0 8px 20px rgba(79, 70, 229, 0.4);
+        transform: translateY(-2px);
+    }
+
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger) 0%, #f87171 100%);
+    color: white;
+}
+
+    .btn-danger:hover {
+        box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+        transform: translateY(-2px);
+    }
+
+.btn-success {
+    background: linear-gradient(135deg, var(--success) 0%, #34d399 100%);
+    color: white;
+}
+
+    .btn-success:hover {
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+        transform: translateY(-2px);
+    }
 
 .btn-sm {
-    padding: 0.25rem 0.75rem;
-}
-
-/* Bảng */
-.table th, .table td {
-    vertical-align: middle;
-    padding: 0.75rem;
-}
-
-/* Form */
-.form-control, .form-select, .input-group-text {
+    padding: 0.4rem 1rem;
+    font-size: 0.875rem;
     border-radius: 0.5rem;
 }
 
-/* Responsive */
+/* ==========================================
+   TABLES (Bảng dữ liệu)
+========================================== */
+.table {
+    width: 100%;
+    background: var(--surface);
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+}
+
+    .table th {
+        background: rgba(241, 245, 249, 0.9);
+        padding: 1.25rem 1rem;
+        font-weight: 600;
+        color: var(--text-secondary);
+        text-transform: uppercase;
+        font-size: 0.8rem;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .table td {
+        padding: 1rem;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f5f9;
+        color: var(--text-primary);
+        transition: background-color 0.2s;
+    }
+
+    .table tbody tr:hover td {
+        background-color: var(--background);
+    }
+
+    /* Chống rớt dòng cho các nút ở cột cuối cùng (Hành động) */
+    .table th:last-child,
+    .table td:last-child {
+        white-space: nowrap;
+        width: 250px;
+    }
+
+/* ==========================================
+   FORMS (Khung nhập liệu)
+========================================== */
+.form-control, .form-select {
+    border-radius: 0.75rem;
+    border: 2px solid #e2e8f0;
+    padding: 0.75rem 1.25rem;
+    font-size: 1rem;
+    color: var(--text-primary);
+    background-color: var(--background);
+    transition: all 0.3s ease;
+}
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--primary);
+        background-color: var(--surface);
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+        outline: none;
+    }
+
+.input-group-text {
+    border-radius: 0.75rem;
+    background-color: #f1f5f9;
+    border: 2px solid #e2e8f0;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* ==========================================
+   RESPONSIVE (Responsive & Thiết bị di động)
+========================================== */
 @media (max-width: 768px) {
     .col-md-3 {
         flex: 0 0 50%;
@@ -67,5 +261,9 @@
     .col-md-3 {
         flex: 0 0 100%;
         max-width: 100%;
+    }
+
+    .card-img-top, .book-img {
+        height: 200px; /* Ảnh thấp hơn trên điện thoại */
     }
 }
