@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +15,7 @@ builder.Services.AddControllers();
 // OpenAPI mặc định của .NET
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddMemoryCache();
 
 // ===== DATABASE MYSQL =====
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
@@ -67,6 +70,36 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(
             Encoding.UTF8.GetBytes(jwtKey!)
         )
+    };
+})
+.AddCookie("ExternalCookie")
+.AddGoogle(GoogleDefaults.AuthenticationScheme, options =>
+{
+    options.ClientId = builder.Configuration["GoogleAuth:ClientId"]!;
+    options.ClientSecret = builder.Configuration["GoogleAuth:ClientSecret"]!;
+
+    // Đây là callback Google gọi về API
+    options.CallbackPath = "/signin-google";
+
+    // Google middleware lưu thông tin tạm vào cookie này
+    options.SignInScheme = "ExternalCookie";
+
+    options.Scope.Add("email");
+    options.Scope.Add("profile");
+
+    options.Events.OnRedirectToAuthorizationEndpoint = context =>
+    {
+        var redirectUri = context.RedirectUri;
+
+        if (!redirectUri.Contains("prompt="))
+        {
+            redirectUri += redirectUri.Contains("?")
+                ? "&prompt=select_account"
+                : "?prompt=select_account";
+        }
+
+        context.Response.Redirect(redirectUri);
+        return Task.CompletedTask;
     };
 });
 

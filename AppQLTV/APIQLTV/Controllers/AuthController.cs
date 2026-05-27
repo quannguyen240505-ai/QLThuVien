@@ -7,6 +7,10 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.Extensions.Caching.Memory;
+using System.Security.Cryptography;
 
 namespace APIQLTV.Controllers
 {
@@ -17,12 +21,14 @@ namespace APIQLTV.Controllers
         private readonly AppDbContext _context;
         private readonly IConfiguration _configuration;
         private readonly EmailService _emailService;
+        private readonly IMemoryCache _cache;
 
-        public AuthController(AppDbContext context, IConfiguration configuration, EmailService emailService)
+        public AuthController(AppDbContext context, IConfiguration configuration, EmailService emailService, IMemoryCache cache)
         {
             _context = context;
             _configuration = configuration;
             _emailService = emailService;
+            _cache = cache;
         }
 
         // POST: api/auth/register
@@ -230,5 +236,130 @@ namespace APIQLTV.Controllers
 
             return Ok("Đặt lại mật khẩu thành công.");
         }
+
+        [HttpGet("google-login")]
+        public IActionResult GoogleLogin()
+        {
+            var redirectUrl = Url.Action(
+                nameof(GoogleCallback),
+                "Auth",
+                null,
+                Request.Scheme
+            );
+
+            var properties = new AuthenticationProperties
+            {
+                RedirectUri = redirectUrl
+            };
+
+            return Challenge(properties, GoogleDefaults.AuthenticationScheme);
+        }
+
+        [HttpGet("google-callback")]
+        public async Task<IActionResult> GoogleCallback()
+        {
+            var frontendSuccessUrl = _configuration["GoogleAuth:FrontendSuccessUrl"];
+
+            if (string.IsNullOrWhiteSpace(frontendSuccessUrl))
+            {
+                return BadRequest("Chưa cấu hình FrontendSuccessUrl.");
+            }
+
+            var result = await HttpContext.AuthenticateAsync("ExternalCookie");
+
+            if (!result.Succeeded || result.Principal == null)
+            {
+                return Redirect($"{frontendSuccessUrl}?error=google_auth_failed");
+            }
+
+            var gmail = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
+            var name = result.Principal.FindFirst(ClaimTypes.Name)?.Value;
+
+            if (string.IsNullOrWhiteSpace(gmail))
+            {
+                return Redirect($"{frontendSuccessUrl}?error=email_not_found");
+            }
+
+            var user = await _context.Users
+                .FirstOrDefaultAsync(u => u.Gmail == gmail);
+
+            if (user == null)
+            {
+                user = new AppUser
+                {
+                    Username = await GenerateUniqueUsernameFromEmail(gmail),
+                    Gmail = gmail,
+                    DateOfBirth = DateTime.Today,
+                    PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
+                    Role = "Member",
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.Users.Add(user);
+                await _context.SaveChangesAsync();
+            }
+
+            var tokenResult = CreateToken(user);
+
+            var authResponse = new AuthResponse
+            {
+                Token = tokenResult.Token,
+                Username = user.Username,
+                Gmail = user.Gmail,
+                DateOfBirth = user.DateOfBirth,
+                Role = user.Role,
+                Expiration = tokenResult.Expiration
+            };
+
+            var temporaryCode = Convert.ToBase64String(RandomNumberGenerator.GetBytes(32))
+                .Replace("+", "")
+                .Replace("/", "")
+                .Replace("=", "");
+
+            _cache.Set(
+                $"social_login_{temporaryCode}",
+                authResponse,
+                TimeSpan.FromMinutes(2)
+            );
+
+            await HttpContext.SignOutAsync("ExternalCookie");
+
+            return Redirect($"{frontendSuccessUrl}?code={temporaryCode}");
+        }
+
+        [HttpPost("exchange-social-code")]
+        public IActionResult ExchangeSocialCode(ExchangeSocialCodeRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Code))
+            {
+                return BadRequest("Mã đăng nhập không hợp lệ.");
+            }
+
+            var cacheKey = $"social_login_{request.Code}";
+
+            if (!_cache.TryGetValue(cacheKey, out AuthResponse? authResponse) || authResponse == null)
+            {
+                return BadRequest("Mã đăng nhập đã hết hạn hoặc không hợp lệ.");
+            }
+
+            _cache.Remove(cacheKey);
+
+            return Ok(authResponse);
+        }
+        private async Task<string> GenerateUniqueUsernameFromEmail(string email)
+        {
+            var baseUsername = email.Split('@')[0];
+            var username = baseUsername;
+            var count = 1;
+
+            while (await _context.Users.AnyAsync(u => u.Username == username))
+            {
+                username = $"{baseUsername}{count}";
+                count++;
+            }
+
+            return username;
+        }
     }
+
 }
