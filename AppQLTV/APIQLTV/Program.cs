@@ -17,6 +17,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddMemoryCache();
 
+
 // ===== DATABASE MYSQL =====
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -105,6 +106,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<LibrarySettingService>();
 
 var app = builder.Build();
 

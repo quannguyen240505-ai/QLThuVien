@@ -1,0 +1,294 @@
+﻿@page "/system"
+@using System.Net.Http
+@using System.Net.Http.Headers
+@using System.Net.Http.Json
+@using AppQLTV.Models.Admin
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>Quản lý hệ thống</PageTitle>
+
+<section class="system-page">
+
+    <div class="system-header">
+        <div>
+            <span class="system-label">
+                <i class="bi bi-sliders"></i>
+                Quản trị hệ thống
+            </span>
+
+            <h1>Quản lý hệ thống</h1>
+            <p>Cấu hình thông tin thư viện, quy định mượn sách và trạng thái hoạt động của hệ thống.</p>
+        </div>
+
+        <div class="system-updated">
+            <span>Cập nhật lần cuối</span>
+            <strong>@lastUpdatedText</strong>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="system-success">
+            @successMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="system-alert">
+            @errorMessage
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="system-loading">
+            <i class="bi bi-arrow-repeat"></i>
+            Đang tải cấu hình hệ thống...
+        </div>
+    }
+    else
+    {
+        <EditForm Model="settingModel" OnValidSubmit="HandleUpdateSettings">
+            <DataAnnotationsValidator />
+
+            <div class="system-grid">
+
+                <div class="system-card">
+                    <div class="card-title">
+                        <i class="bi bi-building"></i>
+                        <div>
+                            <h2>Thông tin thư viện</h2>
+                            <p>Thông tin cơ bản hiển thị trên hệ thống.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Tên thư viện</label>
+                        <InputText class="form-control" @bind-Value="settingModel.LibraryName" />
+                        <ValidationMessage For="@(() => settingModel.LibraryName)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Email liên hệ</label>
+                        <InputText class="form-control" @bind-Value="settingModel.Email" />
+                        <ValidationMessage For="@(() => settingModel.Email)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Số điện thoại</label>
+                        <InputText class="form-control" @bind-Value="settingModel.Phone" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Địa chỉ</label>
+                        <InputText class="form-control" @bind-Value="settingModel.Address" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Giờ mở cửa</label>
+                        <InputText class="form-control" @bind-Value="settingModel.OpeningHours" />
+                    </div>
+                </div>
+
+                <div class="system-card">
+                    <div class="card-title">
+                        <i class="bi bi-journal-check"></i>
+                        <div>
+                            <h2>Quy định mượn sách</h2>
+                            <p>Cấu hình giới hạn mượn và phí phạt quá hạn.</p>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Số sách tối đa được mượn</label>
+                        <InputNumber class="form-control" @bind-Value="settingModel.MaxBorrowBooks" />
+                        <ValidationMessage For="@(() => settingModel.MaxBorrowBooks)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Số ngày mượn tối đa</label>
+                        <InputNumber class="form-control" @bind-Value="settingModel.MaxBorrowDays" />
+                        <ValidationMessage For="@(() => settingModel.MaxBorrowDays)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phí phạt quá hạn mỗi ngày</label>
+                        <InputNumber class="form-control" @bind-Value="settingModel.OverdueFinePerDay" />
+                        <ValidationMessage For="@(() => settingModel.OverdueFinePerDay)" />
+                    </div>
+
+                    <div class="system-toggle-box">
+                        <div>
+                            <h3>Cho phép gửi yêu cầu mượn sách</h3>
+                            <p>Khi tắt, thành viên không thể gửi yêu cầu mượn mới.</p>
+                        </div>
+
+                        <label class="system-switch">
+                            <InputCheckbox @bind-Value="settingModel.AllowBorrowRequest" />
+                            <span></span>
+                        </label>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="system-card rules-card">
+                <div class="card-title">
+                    <i class="bi bi-clipboard-check"></i>
+                    <div>
+                        <h2>Nội quy thư viện</h2>
+                        <p>Nội quy chung dành cho bạn đọc khi sử dụng thư viện.</p>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Nội quy</label>
+                    <InputTextArea class="form-control textarea"
+                                   @bind-Value="settingModel.LibraryRules" />
+                </div>
+            </div>
+
+            <div class="system-actions">
+                <button type="button" class="system-secondary-btn" @onclick="LoadSettings">
+                    <i class="bi bi-arrow-clockwise"></i>
+                    Tải lại
+                </button>
+
+                <button type="submit" class="system-primary-btn" disabled="@isSubmitting">
+                    <i class="bi bi-save"></i>
+                    @(isSubmitting ? "Đang lưu..." : "Lưu cấu hình")
+                </button>
+            </div>
+
+        </EditForm>
+    }
+
+</section>
+
+@code {
+    private UpdateLibrarySettingRequest settingModel = new();
+
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+
+    private string errorMessage = "";
+    private string successMessage = "";
+    private string lastUpdatedText = "Chưa có dữ liệu";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSettings();
+    }
+
+    private async Task LoadSettings()
+    {
+        isLoading = true;
+        errorMessage = "";
+        successMessage = "";
+
+        try
+        {
+            var request = await CreateAuthorizedRequest(HttpMethod.Get, "api/System/settings");
+            var response = await Http.SendAsync(request);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+                return;
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                errorMessage = "Bạn không có quyền truy cập chức năng quản lý hệ thống.";
+                return;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                return;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<LibrarySettingResponse>();
+
+            if (result == null)
+            {
+                errorMessage = "Không đọc được cấu hình hệ thống.";
+                return;
+            }
+
+            settingModel = new UpdateLibrarySettingRequest
+            {
+                LibraryName = result.LibraryName,
+                Email = result.Email,
+                Phone = result.Phone,
+                Address = result.Address,
+                OpeningHours = result.OpeningHours,
+                MaxBorrowBooks = result.MaxBorrowBooks,
+                MaxBorrowDays = result.MaxBorrowDays,
+                OverdueFinePerDay = result.OverdueFinePerDay,
+                AllowBorrowRequest = result.AllowBorrowRequest,
+                LibraryRules = result.LibraryRules
+            };
+
+            lastUpdatedText = result.UpdatedAt.ToString("dd/MM/yyyy HH:mm");
+        }
+        catch
+        {
+            errorMessage = "Không thể kết nối đến máy chủ API.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task HandleUpdateSettings()
+    {
+        isSubmitting = true;
+        errorMessage = "";
+        successMessage = "";
+
+        try
+        {
+            var request = await CreateAuthorizedRequest(HttpMethod.Put, "api/System/settings");
+            request.Content = JsonContent.Create(settingModel);
+
+            var response = await Http.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                return;
+            }
+
+            successMessage = "Cập nhật cấu hình hệ thống thành công.";
+            await LoadSettings();
+        }
+        catch
+        {
+            errorMessage = "Không thể kết nối đến máy chủ API.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task<HttpRequestMessage> CreateAuthorizedRequest(HttpMethod method, string url)
+    {
+        var token = await JS.InvokeAsync<string?>("localStorage.getItem", "authToken");
+
+        var request = new HttpRequestMessage(method, url);
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        return request;
+    }
+}

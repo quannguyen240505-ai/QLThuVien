@@ -8,5 +8,6 @@ namespace APIQLTV.Models
         {
         }
         public DbSet<AppUser> Users { get; set; }
+        public DbSet<LibrarySetting> LibrarySettings { get; set; }
     }
 }
