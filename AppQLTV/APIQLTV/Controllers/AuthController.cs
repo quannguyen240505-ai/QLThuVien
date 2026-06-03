@@ -98,6 +98,10 @@ namespace APIQLTV.Controllers
                 request.Password,
                 user.PasswordHash
             );
+            if (!user.IsActive)
+            {
+                return BadRequest("Tài khoản đã bị khóa.");
+            }
 
             if (!isPasswordValid)
             {
@@ -265,6 +269,7 @@ namespace APIQLTV.Controllers
                 return BadRequest("Chưa cấu hình FrontendSuccessUrl.");
             }
 
+
             var result = await HttpContext.AuthenticateAsync("ExternalCookie");
 
             if (!result.Succeeded || result.Principal == null)
@@ -297,6 +302,10 @@ namespace APIQLTV.Controllers
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
+            }
+            if (!user.IsActive)
+            {
+                return Redirect($"{frontendSuccessUrl}?error=account_locked");
             }
 
             var tokenResult = CreateToken(user);

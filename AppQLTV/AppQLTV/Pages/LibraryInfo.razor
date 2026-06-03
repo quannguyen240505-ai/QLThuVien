@@ -1,0 +1,189 @@
+﻿@page "/library-info"
+@using System.Net.Http.Json
+@using AppQLTV.Models.Admin
+@inject HttpClient Http
+
+<PageTitle>Thông tin thư viện</PageTitle>
+
+<section class="library-info-page">
+
+    <div class="library-info-hero">
+        <div>
+            <span class="library-info-label">
+                <i class="bi bi-info-square"></i>
+                Thông tin thư viện
+            </span>
+
+            <h1>@setting.LibraryName</h1>
+            <p>
+                Xem thông tin liên hệ, giờ mở cửa, quy định mượn sách và nội quy sử dụng thư viện.
+            </p>
+        </div>
+
+        <div class="library-status @(setting.AllowBorrowRequest ? "open" : "closed")">
+            <i class="bi @(setting.AllowBorrowRequest ? "bi-check-circle" : "bi-x-circle")"></i>
+
+            <div>
+                <span>Trạng thái mượn sách</span>
+                <strong>
+                    @(setting.AllowBorrowRequest ? "Đang cho phép gửi yêu cầu" : "Tạm ngừng nhận yêu cầu")
+                </strong>
+            </div>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="library-info-alert">
+            @errorMessage
+        </div>
+    }
+
+    @if (isLoading)
+    {
+        <div class="library-info-loading">
+            <i class="bi bi-arrow-repeat"></i>
+            Đang tải thông tin thư viện...
+        </div>
+    }
+    else
+    {
+        <div class="library-info-grid">
+
+            <div class="library-info-card">
+                <div class="card-title">
+                    <i class="bi bi-building"></i>
+                    <div>
+                        <h2>Thông tin liên hệ</h2>
+                        <p>Thông tin cơ bản của thư viện.</p>
+                    </div>
+                </div>
+
+                <div class="info-list">
+                    <div class="info-item">
+                        <span>Email</span>
+                        <strong>@setting.Email</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span>Số điện thoại</span>
+                        <strong>@DisplayValue(setting.Phone)</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span>Địa chỉ</span>
+                        <strong>@DisplayValue(setting.Address)</strong>
+                    </div>
+
+                    <div class="info-item">
+                        <span>Giờ mở cửa</span>
+                        <strong>@DisplayValue(setting.OpeningHours)</strong>
+                    </div>
+                </div>
+            </div>
+
+            <div class="library-info-card">
+                <div class="card-title">
+                    <i class="bi bi-journal-check"></i>
+                    <div>
+                        <h2>Quy định mượn sách</h2>
+                        <p>Các giới hạn và quy định khi mượn sách.</p>
+                    </div>
+                </div>
+
+                <div class="policy-grid">
+                    <div class="policy-box">
+                        <span>Số sách tối đa</span>
+                        <strong>@setting.MaxBorrowBooks</strong>
+                        <small>quyển/lần</small>
+                    </div>
+
+                    <div class="policy-box">
+                        <span>Số ngày mượn tối đa</span>
+                        <strong>@setting.MaxBorrowDays</strong>
+                        <small>ngày</small>
+                    </div>
+
+                    <div class="policy-box full">
+                        <span>Phí phạt quá hạn</span>
+                        <strong>@setting.OverdueFinePerDay.ToString("N0") VNĐ</strong>
+                        <small>mỗi ngày quá hạn</small>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="library-info-card rules-card">
+            <div class="card-title">
+                <i class="bi bi-clipboard-check"></i>
+                <div>
+                    <h2>Nội quy thư viện</h2>
+                    <p>Nội quy dành cho bạn đọc khi sử dụng tài liệu và dịch vụ thư viện.</p>
+                </div>
+            </div>
+
+            <div class="rules-content">
+                @if (string.IsNullOrWhiteSpace(setting.LibraryRules))
+                {
+                    <p>Chưa có nội quy thư viện.</p>
+                }
+                else
+                {
+                    <p>@setting.LibraryRules</p>
+                }
+            </div>
+        </div>
+    }
+
+</section>
+
+@code {
+    private LibrarySettingResponse setting = new();
+    private bool isLoading = true;
+    private string errorMessage = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadLibraryInfo();
+    }
+
+    private async Task LoadLibraryInfo()
+    {
+        isLoading = true;
+        errorMessage = "";
+
+        try
+        {
+            var result = await Http.GetFromJsonAsync<LibrarySettingResponse>(
+                "api/System/settings-public"
+            );
+
+            if (result == null)
+            {
+                errorMessage = "Không đọc được thông tin thư viện.";
+                return;
+            }
+
+            setting = result;
+        }
+        catch
+        {
+            errorMessage = "Không thể kết nối đến máy chủ API.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private string DisplayValue(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return "Chưa cập nhật";
+        }
+
+        return value;
+    }
+}

@@ -1,0 +1,141 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using AppQLTV.Models.Admin
+
+<div class="modal-backdrop-custom">
+    <div class="admin-modal">
+        <div class="modal-header-custom">
+            <div>
+                <h2>@(IsEditMode ? "Cập nhật tài khoản" : "Thêm tài khoản")</h2>
+                <p>@(IsEditMode ? "Chỉnh sửa thông tin tài khoản người dùng." : "Tạo tài khoản mới trong hệ thống.")</p>
+            </div>
+
+            <button class="modal-close" @onclick="OnClose">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        @if (IsEditMode)
+        {
+            <EditForm Model="UpdateModel" OnValidSubmit="OnSubmitUpdate">
+                <DataAnnotationsValidator />
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <InputText class="form-control" @bind-Value="UpdateModel.Username" />
+                        <ValidationMessage For="@(() => UpdateModel.Username)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Gmail</label>
+                        <InputText class="form-control" @bind-Value="UpdateModel.Gmail" />
+                        <ValidationMessage For="@(() => UpdateModel.Gmail)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ngày sinh</label>
+                        <InputDate class="form-control" @bind-Value="UpdateModel.DateOfBirth" />
+                        <ValidationMessage For="@(() => UpdateModel.DateOfBirth)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Role</label>
+                        <InputSelect class="form-control" @bind-Value="UpdateModel.Role">
+                            <option value="Member">Member</option>
+                            <option value="Librarian">Librarian</option>
+                            <option value="Admin">Admin</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <InputCheckbox @bind-Value="UpdateModel.IsActive" />
+                            Tài khoản đang hoạt động
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="admin-secondary-btn" @onclick="OnClose">Hủy</button>
+
+                    <button type="submit" class="admin-primary-btn" disabled="@IsSubmitting">
+                        @(IsSubmitting ? "Đang lưu..." : "Lưu thay đổi")
+                    </button>
+                </div>
+            </EditForm>
+        }
+        else
+        {
+            <EditForm Model="CreateModel" OnValidSubmit="OnSubmitCreate">
+                <DataAnnotationsValidator />
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <InputText class="form-control" @bind-Value="CreateModel.Username" />
+                        <ValidationMessage For="@(() => CreateModel.Username)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Gmail</label>
+                        <InputText class="form-control" @bind-Value="CreateModel.Gmail" />
+                        <ValidationMessage For="@(() => CreateModel.Gmail)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Ngày sinh</label>
+                        <InputDate class="form-control" @bind-Value="CreateModel.DateOfBirth" />
+                        <ValidationMessage For="@(() => CreateModel.DateOfBirth)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mật khẩu</label>
+                        <InputText class="form-control" type="password" @bind-Value="CreateModel.Password" />
+                        <ValidationMessage For="@(() => CreateModel.Password)" />
+                    </div>
+
+                    <div class="form-group">
+                        <label>Role</label>
+                        <InputSelect class="form-control" @bind-Value="CreateModel.Role">
+                            <option value="Member">Member</option>
+                            <option value="Librarian">Librarian</option>
+                            <option value="Admin">Admin</option>
+                        </InputSelect>
+                    </div>
+
+                    <div class="form-group checkbox-group">
+                        <label>
+                            <InputCheckbox @bind-Value="CreateModel.IsActive" />
+                            Tài khoản đang hoạt động
+                        </label>
+                    </div>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="admin-secondary-btn" @onclick="OnClose">Hủy</button>
+
+                    <button type="submit" class="admin-primary-btn" disabled="@IsSubmitting">
+                        @(IsSubmitting ? "Đang tạo..." : "Tạo tài khoản")
+                    </button>
+                </div>
+            </EditForm>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public bool IsEditMode { get; set; }
+
+    [Parameter] public bool IsSubmitting { get; set; }
+
+    [Parameter] public CreateUserRequest CreateModel { get; set; } = new();
+
+    [Parameter] public UpdateUserRequest UpdateModel { get; set; } = new();
+
+    [Parameter] public EventCallback OnSubmitCreate { get; set; }
+
+    [Parameter] public EventCallback OnSubmitUpdate { get; set; }
+
+    [Parameter] public EventCallback OnClose { get; set; }
+}

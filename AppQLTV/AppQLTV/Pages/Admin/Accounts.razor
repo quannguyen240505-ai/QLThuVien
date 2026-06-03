@@ -1,0 +1,497 @@
+﻿@page "/accounts"
+@using System.Net.Http
+@using System.Net.Http.Headers
+@using System.Net.Http.Json
+@using AppQLTV.Models.Admin
+@using AppQLTV.Pages.Admin
+@inject HttpClient Http
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<PageTitle>Quản lý tài khoản</PageTitle>
+
+<section class="admin-page">
+
+    <div class="admin-header">
+        <div>
+            <span class="admin-label">
+                <i class="bi bi-person-gear"></i>
+                Admin
+            </span>
+
+            <h1>Quản lý tài khoản</h1>
+            <p>Thêm, sửa, xóa, khóa tài khoản và phân quyền người dùng trong hệ thống thư viện.</p>
+        </div>
+
+        <button class="admin-primary-btn" @onclick="OpenCreateForm">
+            <i class="bi bi-plus-circle"></i>
+            Thêm tài khoản
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(successMessage))
+    {
+        <div class="admin-success">
+            @successMessage
+        </div>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(errorMessage))
+    {
+        <div class="admin-alert">
+            @errorMessage
+        </div>
+    }
+
+    <div class="admin-toolbar">
+        <div class="admin-search">
+            <i class="bi bi-search"></i>
+            <input @bind="searchKeyword"
+                   @bind:event="oninput"
+                   placeholder="Tìm theo username, gmail, role..." />
+        </div>
+
+        <select class="admin-filter" @bind="roleFilter">
+            <option value="">Tất cả role</option>
+            <option value="Member">Member</option>
+            <option value="Librarian">Librarian</option>
+            <option value="Admin">Admin</option>
+        </select>
+
+        <select class="admin-filter" @bind="statusFilter">
+            <option value="">Tất cả trạng thái</option>
+            <option value="active">Đang hoạt động</option>
+            <option value="locked">Đã khóa</option>
+        </select>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="admin-loading">
+            <i class="bi bi-arrow-repeat"></i>
+            Đang tải danh sách tài khoản...
+        </div>
+    }
+    else
+    {
+        <UserTable Users="FilteredUsers"
+                   OnEdit="OpenEditForm"
+                   OnDelete="DeleteUser"
+                   OnToggleStatus="ToggleStatus"
+                   OnResetPassword="OpenResetPassword"
+                   OnChangeRole="QuickChangeRole" />
+    }
+
+    @if (showForm)
+    {
+        <UserFormModal IsEditMode="isEditMode"
+                       IsSubmitting="isSubmitting"
+                       CreateModel="createModel"
+                       UpdateModel="updateModel"
+                       OnSubmitCreate="HandleCreateUser"
+                       OnSubmitUpdate="HandleUpdateUser"
+                       OnClose="CloseForm" />
+    }
+
+    @if (showResetPassword)
+    {
+        <ResetPasswordModal SelectedUser="selectedUser"
+                            Model="resetPasswordModel"
+                            IsSubmitting="isSubmitting"
+                            OnSubmit="HandleResetPassword"
+                            OnClose="CloseResetPassword" />
+    }
+
+</section>
+
+@code {
+    private List<UserResponse> users = new();
+
+    private CreateUserRequest createModel = new();
+    private UpdateUserRequest updateModel = new();
+    private AdminResetUserPasswordRequest resetPasswordModel = new();
+
+    private UserResponse? selectedUser;
+
+    private bool isLoading = true;
+    private bool isSubmitting = false;
+    private bool showForm = false;
+    private bool isEditMode = false;
+    private bool showResetPassword = false;
+
+    private string errorMessage = "";
+    private string successMessage = "";
+    private string searchKeyword = "";
+    private string roleFilter = "";
+    private string statusFilter = "";
+
+    private IEnumerable<UserResponse> FilteredUsers
+    {
+        get
+        {
+            var query = users.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(searchKeyword))
+            {
+                var keyword = searchKeyword.Trim().ToLower();
+
+                query = query.Where(u =>
+                    u.Username.ToLower().Contains(keyword) ||
+                    u.Gmail.ToLower().Contains(keyword) ||
+                    u.Role.ToLower().Contains(keyword) ||
+                    (u.AuthProvider ?? "").ToLower().Contains(keyword));
+            }
+
+            if (!string.IsNullOrWhiteSpace(roleFilter))
+            {
+                query = query.Where(u => u.Role == roleFilter);
+            }
+
+            if (statusFilter == "active")
+            {
+                query = query.Where(u => u.IsActive);
+            }
+            else if (statusFilter == "locked")
+            {
+                query = query.Where(u => !u.IsActive);
+            }
+
+            return query;
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        isLoading = true;
+        errorMessage = "";
+
+        try
+        {
+            var request = await CreateAuthorizedRequest(HttpMethod.Get, "api/Admin/users");
+            var response = await Http.SendAsync(request);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                Navigation.NavigateTo("/login", forceLoad: true);
+                return;
+            }
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Forbidden)
+            {
+                errorMessage = "Bạn không có quyền truy cập trang quản lý tài khoản.";
+                return;
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                return;
+            }
+
+            users = await response.Content.ReadFromJsonAsync<List<UserResponse>>() ?? new();
+        }
+        catch
+        {
+            errorMessage = "Không thể kết nối đến máy chủ API.";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void OpenCreateForm()
+    {
+        ClearMessages();
+
+        isEditMode = false;
+
+        createModel = new CreateUserRequest
+        {
+            DateOfBirth = DateTime.Today,
+            Role = "Member",
+            IsActive = true
+        };
+
+        showForm = true;
+    }
+
+    private void OpenEditForm(UserResponse user)
+    {
+        ClearMessages();
+
+        selectedUser = user;
+        isEditMode = true;
+
+        updateModel = new UpdateUserRequest
+        {
+            Username = user.Username,
+            Gmail = user.Gmail,
+            DateOfBirth = user.DateOfBirth,
+            Role = user.Role,
+            IsActive = user.IsActive
+        };
+
+        showForm = true;
+    }
+
+    private void CloseForm()
+    {
+        showForm = false;
+        selectedUser = null;
+    }
+
+    private async Task HandleCreateUser()
+    {
+        isSubmitting = true;
+        ClearMessages();
+
+        try
+        {
+            var request = await CreateAuthorizedRequest(HttpMethod.Post, "api/Admin/users");
+            request.Content = JsonContent.Create(createModel);
+
+            var response = await Http.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                return;
+            }
+
+            successMessage = "Tạo tài khoản thành công.";
+            showForm = false;
+
+            await LoadUsers();
+        }
+        catch
+        {
+            errorMessage = "Không thể kết nối đến máy chủ API.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task HandleUpdateUser()
+    {
+        if (selectedUser == null)
+        {
+            return;
+        }
+
+        isSubmitting = true;
+        ClearMessages();
+
+        try
+        {
+            var request = await CreateAuthorizedRequest(HttpMethod.Put, $"api/Admin/users/{selectedUser.Id}");
+            request.Content = JsonContent.Create(updateModel);
+
+            var response = await Http.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                return;
+            }
+
+            successMessage = "Cập nhật tài khoản thành công.";
+            showForm = false;
+
+            await LoadUsers();
+        }
+        catch
+        {
+            errorMessage = "Không thể kết nối đến máy chủ API.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task QuickChangeRole((UserResponse User, string NewRole) data)
+    {
+        var user = data.User;
+        var newRole = data.NewRole;
+
+        if (user.Role == newRole)
+        {
+            return;
+        }
+
+        ClearMessages();
+
+        try
+        {
+            var request = await CreateAuthorizedRequest(HttpMethod.Put, $"api/Admin/users/{user.Id}/role");
+            request.Content = JsonContent.Create(new { Role = newRole });
+
+            var response = await Http.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                await LoadUsers();
+                return;
+            }
+
+            successMessage = $"Đã cập nhật quyền của {user.Username} thành {newRole}.";
+            await LoadUsers();
+        }
+        catch
+        {
+            errorMessage = "Không thể kết nối đến máy chủ API.";
+        }
+    }
+
+    private async Task ToggleStatus(UserResponse user)
+    {
+        ClearMessages();
+
+        var confirmText = user.IsActive
+            ? $"Bạn có chắc muốn khóa tài khoản {user.Username}?"
+            : $"Bạn có chắc muốn mở khóa tài khoản {user.Username}?";
+
+        var confirmed = await JS.InvokeAsync<bool>("confirm", confirmText);
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        try
+        {
+            var request = await CreateAuthorizedRequest(HttpMethod.Put, $"api/Admin/users/{user.Id}/status");
+            request.Content = JsonContent.Create(new { IsActive = !user.IsActive });
+
+            var response = await Http.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                return;
+            }
+
+            successMessage = user.IsActive ? "Đã khóa tài khoản." : "Đã mở khóa tài khoản.";
+            await LoadUsers();
+        }
+        catch
+        {
+            errorMessage = "Không thể kết nối đến máy chủ API.";
+        }
+    }
+
+    private void OpenResetPassword(UserResponse user)
+    {
+        ClearMessages();
+
+        selectedUser = user;
+        resetPasswordModel = new AdminResetUserPasswordRequest();
+        showResetPassword = true;
+    }
+
+    private void CloseResetPassword()
+    {
+        showResetPassword = false;
+        selectedUser = null;
+    }
+
+    private async Task HandleResetPassword()
+    {
+        if (selectedUser == null)
+        {
+            return;
+        }
+
+        isSubmitting = true;
+        ClearMessages();
+
+        try
+        {
+            var request = await CreateAuthorizedRequest(HttpMethod.Put, $"api/Admin/users/{selectedUser.Id}/password");
+            request.Content = JsonContent.Create(resetPasswordModel);
+
+            var response = await Http.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                return;
+            }
+
+            successMessage = "Reset mật khẩu thành công.";
+            showResetPassword = false;
+            selectedUser = null;
+        }
+        catch
+        {
+            errorMessage = "Không thể kết nối đến máy chủ API.";
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
+    }
+
+    private async Task DeleteUser(UserResponse user)
+    {
+        ClearMessages();
+
+        var confirmed = await JS.InvokeAsync<bool>(
+            "confirm",
+            $"Bạn có chắc muốn xóa tài khoản {user.Username}? Hành động này không thể hoàn tác."
+        );
+
+        if (!confirmed)
+        {
+            return;
+        }
+
+        try
+        {
+            var request = await CreateAuthorizedRequest(HttpMethod.Delete, $"api/Admin/users/{user.Id}");
+            var response = await Http.SendAsync(request);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                errorMessage = await response.Content.ReadAsStringAsync();
+                return;
+            }
+
+            successMessage = "Xóa tài khoản thành công.";
+            await LoadUsers();
+        }
+        catch
+        {
+            errorMessage = "Không thể kết nối đến máy chủ API.";
+        }
+    }
+
+    private async Task<HttpRequestMessage> CreateAuthorizedRequest(HttpMethod method, string url)
+    {
+        var token = await JS.InvokeAsync<string?>("localStorage.getItem", "authToken");
+
+        var request = new HttpRequestMessage(method, url);
+
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+
+        return request;
+    }
+
+    private void ClearMessages()
+    {
+        errorMessage = "";
+        successMessage = "";
+    }
+}

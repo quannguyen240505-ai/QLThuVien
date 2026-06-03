@@ -4,6 +4,7 @@ using APIQLTV.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace APIQLTV.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260603113225_AddAdminUserFields")]
+    partial class AddAdminUserFields
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -71,58 +74,6 @@ namespace APIQLTV.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("APIQLTV.Models.LibrarySetting", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<bool>("AllowBorrowRequest")
-                        .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("LibraryName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("LibraryRules")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<int>("MaxBorrowBooks")
-                        .HasColumnType("int");
-
-                    b.Property<int>("MaxBorrowDays")
-                        .HasColumnType("int");
-
-                    b.Property<string>("OpeningHours")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<decimal>("OverdueFinePerDay")
-                        .HasColumnType("decimal(65,30)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("LibrarySettings");
                 });
 #pragma warning restore 612, 618
         }
