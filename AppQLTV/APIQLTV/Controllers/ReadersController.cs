@@ -20,7 +20,7 @@ namespace APIQLTV.Controllers
         public async Task<IActionResult> GetReaders()
         {
             var readers = await _context.Readers
-                .OrderByDescending(r => r.Id)
+                .OrderByDescending(r => r.ReaderId)
                 .ToListAsync();
 
             return Ok(readers);

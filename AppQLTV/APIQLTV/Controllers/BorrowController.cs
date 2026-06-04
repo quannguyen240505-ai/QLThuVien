@@ -42,7 +42,7 @@ namespace APIQLTV.Controllers
             {
                 var detail = new BorrowDetail
                 {
-                    BorrowTicketId = ticket.Id,
+                    BorrowTicketId = ticket.BorrowTicketId,
                     BookId = item.BookId,
                     Quantity = item.Quantity,
                     Status = "Borrowing"
@@ -56,7 +56,7 @@ namespace APIQLTV.Controllers
             return Ok(new
             {
                 message = "Mượn sách thành công",
-                borrowTicketId = ticket.Id
+                borrowTicketId = ticket.BorrowTicketId
             });
         }
 
@@ -65,7 +65,7 @@ namespace APIQLTV.Controllers
         {
             var ticket = await _context.BorrowTickets
                 .Include(t => t.BorrowDetails)
-                .FirstOrDefaultAsync(t => t.Id == id);
+                .FirstOrDefaultAsync(t => t.BorrowTicketId == id);
 
             if (ticket == null)
                 return NotFound("Không tìm thấy phiếu mượn");
@@ -98,7 +98,7 @@ namespace APIQLTV.Controllers
                 .OrderByDescending(t => t.BorrowDate)
                 .Select(t => new
                 {
-                    t.Id,
+                    t.BorrowTicketId,
                     ReaderName = t.Reader != null ? t.Reader.FullName : "",
                     t.BorrowDate,
                     t.DueDate,
