@@ -1,0 +1,182 @@
+﻿@page "/borrow-books"
+@using AppQLTV.Models.Library
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Lập phiếu mượn</PageTitle>
+
+<div class="container mt-4">
+    <div class="card shadow border-0 rounded-4">
+        <div class="card-header bg-primary text-white">
+            <h3 class="mb-0">
+                <i class="bi bi-journal-arrow-up"></i>
+                Lập phiếu mượn sách
+            </h3>
+        </div>
+
+        <div class="card-body p-4">
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Mã độc giả</label>
+                    <input class="form-control form-control-lg"
+                           type="number"
+                           @bind="borrow.ReaderId"
+                           placeholder="VD: 1" />
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Mã sách</label>
+                    <input class="form-control form-control-lg"
+                           type="number"
+                           @bind="book.BookId"
+                           placeholder="VD: 1" />
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label fw-bold">Số lượng</label>
+                    <input class="form-control form-control-lg"
+                           type="number"
+                           @bind="book.Quantity" />
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Hạn trả</label>
+                <input class="form-control form-control-lg"
+                       type="date"
+                       @bind="borrow.DueDate" />
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">Ghi chú</label>
+                <textarea class="form-control"
+                          rows="3"
+                          @bind="borrow.Note"
+                          placeholder="VD: Mượn sách lần đầu"></textarea>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary"
+                        @onclick="AddBook">
+                    <i class="bi bi-plus-circle"></i>
+                    Thêm sách vào phiếu
+                </button>
+
+                <button class="btn btn-success"
+                        @onclick="CreateBorrowTicket">
+                    <i class="bi bi-check-circle"></i>
+                    Lập phiếu mượn
+                </button>
+            </div>
+
+            @if (borrow.Books.Count > 0)
+            {
+                <table class="table table-bordered mt-4">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Mã sách</th>
+                            <th>Số lượng</th>
+                            <th>Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in borrow.Books)
+                        {
+                            <tr>
+                                <td>@item.BookId</td>
+                                <td>@item.Quantity</td>
+                                <td>
+                                    <button class="btn btn-sm btn-danger"
+                                            @onclick="() => RemoveBook(item)">
+                                        Xóa
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert @(success ? "alert-success" : "alert-danger") mt-4">
+                    @message
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private BorrowRequestModel borrow = new()
+    {
+        DueDate = DateTime.Now.AddDays(7)
+    };
+
+    private BorrowBookItemModel book = new()
+    {
+        Quantity = 1
+    };
+
+    private string message = "";
+    private bool success;
+
+    private void AddBook()
+    {
+        if (book.BookId <= 0 || book.Quantity <= 0)
+        {
+            success = false;
+            message = "Vui lòng nhập mã sách và số lượng hợp lệ.";
+            return;
+        }
+
+        borrow.Books.Add(new BorrowBookItemModel
+        {
+            BookId = book.BookId,
+            Quantity = book.Quantity
+        });
+
+        book = new BorrowBookItemModel { Quantity = 1 };
+        message = "";
+    }
+
+    private void RemoveBook(BorrowBookItemModel item)
+    {
+        borrow.Books.Remove(item);
+    }
+
+    private async Task CreateBorrowTicket()
+    {
+        if (borrow.ReaderId <= 0)
+        {
+            success = false;
+            message = "Vui lòng nhập mã độc giả.";
+            return;
+        }
+
+        if (borrow.Books.Count == 0)
+        {
+            success = false;
+            message = "Vui lòng thêm ít nhất một sách.";
+            return;
+        }
+
+        var response = await Http.PostAsJsonAsync("api/borrow", borrow);
+
+        success = response.IsSuccessStatusCode;
+
+        if (success)
+        {
+            message = "Lập phiếu mượn thành công.";
+            borrow = new BorrowRequestModel
+            {
+                DueDate = DateTime.Now.AddDays(7)
+            };
+        }
+        else
+        {
+            message = "Lập phiếu mượn thất bại. Kiểm tra mã độc giả hoặc mã sách.";
+        }
+    }
+}

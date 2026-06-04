@@ -1,0 +1,47 @@
+# Build results
+bin/
+obj/
+
+# Visual Studio cache/options
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# ReSharper
+_ReSharper*/
+*.DotSettings.user
+
+# Logs
+*.log
+
+# NuGet packages
+packages/
+
+# Publish output
+publish/
+
+# Database files
+*.mdf
+*.ldf
+
+# Temporary files
+*.tmp
+*.temp
+
+# OS generated
+Thumbs.db
+Desktop.ini
+
+# Node modules (nếu có Angular/React frontend)
+node_modules/
+
+# Angular build
+dist/
+
+# Environment files
+.env

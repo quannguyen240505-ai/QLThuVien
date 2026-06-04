@@ -1,0 +1,58 @@
+﻿@page "/readers"
+@using AppQLTV.Models.Library
+@inject HttpClient Http
+
+<h3>Quản lý độc giả</h3>
+
+<input class="form-control mb-2" placeholder="Họ tên" @bind="reader.FullName" />
+<input class="form-control mb-2" placeholder="SĐT" @bind="reader.Phone" />
+<input class="form-control mb-2" placeholder="Email" @bind="reader.Email" />
+<input class="form-control mb-2" placeholder="Địa chỉ" @bind="reader.Address" />
+
+<button class="btn btn-primary mb-3" @onclick="SaveReader">Thêm độc giả</button>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Họ tên</th>
+            <th>SĐT</th>
+            <th>Email</th>
+            <th>Địa chỉ</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var r in readers)
+        {
+            <tr>
+                <td>@r.ReaderId</td>
+                <td>@r.FullName</td>
+                <td>@r.Phone</td>
+                <td>@r.Email</td>
+                <td>@r.Address</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    List<ReaderModel> readers = new();
+    ReaderModel reader = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReaders();
+    }
+
+    async Task LoadReaders()
+    {
+        readers = await Http.GetFromJsonAsync<List<ReaderModel>>("api/readers") ?? new();
+    }
+
+    async Task SaveReader()
+    {
+        await Http.PostAsJsonAsync("api/readers", reader);
+        reader = new();
+        await LoadReaders();
+    }
+}
