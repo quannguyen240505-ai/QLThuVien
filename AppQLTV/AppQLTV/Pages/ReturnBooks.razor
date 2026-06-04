@@ -1,0 +1,95 @@
+﻿@page "/return-books"
+@inject HttpClient Http
+
+<PageTitle>Trả sách</PageTitle>
+
+<div class="container mt-4">
+
+    ```
+    <div class="card shadow border-0 rounded-4">
+
+        <div class="card-header bg-warning text-dark">
+            <h3 class="mb-0">
+                <i class="bi bi-arrow-return-left"></i>
+                Trả sách
+            </h3>
+        </div>
+
+        <div class="card-body p-4">
+
+            <div class="row">
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">
+                        Mã phiếu mượn
+                    </label>
+
+                    <input class="form-control form-control-lg"
+                           type="number"
+                           placeholder="Nhập mã phiếu mượn..."
+                           @bind="borrowTicketId" />
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <label class="form-label fw-bold">
+                        Mã sách
+                    </label>
+
+                    <input class="form-control form-control-lg"
+                           type="number"
+                           placeholder="Nhập mã sách..."
+                           @bind="bookId" />
+                </div>
+
+            </div>
+
+            <div class="d-grid mt-3">
+                <button class="btn btn-warning btn-lg"
+                        @onclick="HandleReturnBook">
+                    <i class="bi bi-check-circle"></i>
+                    Xác nhận trả sách
+                </button>
+            </div>
+
+            @if (!string.IsNullOrEmpty(message))
+            {
+                <div class="alert @(success ? "alert-success" : "alert-danger") mt-4">
+
+                    <i class="bi @(success ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill")"></i>
+
+                    @message
+                </div>
+            }
+
+        </div>
+
+    </div>
+    ```
+
+</div>
+
+@code {
+
+private int borrowTicketId;
+
+    private int bookId;
+
+    private string message = "";
+
+    private bool success;
+
+    private async Task HandleReturnBook()
+    {
+        var response = await Http.PostAsync(
+            $"api/borrow/return?borrowTicketId={borrowTicketId}&bookId={bookId}",
+            null);
+
+        success = response.IsSuccessStatusCode;
+
+        message = success
+            ? "Trả sách thành công."
+            : "Không thể trả sách. Vui lòng kiểm tra lại thông tin.";
+    }
+
+
+}

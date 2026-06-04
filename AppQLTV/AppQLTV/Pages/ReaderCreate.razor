@@ -1,0 +1,76 @@
+﻿@page "/readers/create"
+@using AppQLTV.Models.Library
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<h3>Thêm độc giả</h3>
+
+<div class="card p-4">
+    <div class="mb-3">
+        <label>Họ tên</label>
+        <input class="form-control" @bind="reader.FullName" />
+    </div>
+
+    <div class="mb-3">
+        <label>Email</label>
+        <input class="form-control" @bind="reader.Email" />
+    </div>
+
+    <div class="mb-3">
+        <label>Số điện thoại</label>
+        <input class="form-control" @bind="reader.Phone" />
+    </div>
+
+    <div class="mb-3">
+        <label>Địa chỉ</label>
+        <input class="form-control" @bind="reader.Address" />
+    </div>
+
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-info">@message</div>
+    }
+
+    <button class="btn btn-primary" @onclick="CreateReader">Lưu độc giả</button>
+    <button class="btn btn-secondary ms-2" @onclick="GoBack">Quay lại</button>
+</div>
+
+@code {
+    private ReaderModel reader = new()
+    {
+        Status = "Active"
+    };
+
+    private string message = "";
+
+    private async Task CreateReader()
+    {
+        if (string.IsNullOrWhiteSpace(reader.FullName))
+        {
+            message = "Vui lòng nhập họ tên độc giả.";
+            return;
+        }
+
+        if (string.IsNullOrWhiteSpace(reader.Phone))
+        {
+            message = "Vui lòng nhập số điện thoại.";
+            return;
+        }
+
+        var response = await Http.PostAsJsonAsync("api/readers", reader);
+
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/readers");
+        }
+        else
+        {
+            message = "Thêm độc giả thất bại.";
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/readers");
+    }
+}
