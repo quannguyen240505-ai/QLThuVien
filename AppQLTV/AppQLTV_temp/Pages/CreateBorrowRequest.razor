@@ -1,0 +1,120 @@
+﻿@page "/create-borrow-request"
+@using AppQLTV.Models
+@using AppQLTV.Services
+@inject IBookService BookService
+@inject IBorrowService BorrowService
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+
+<h3>📚 Gửi yêu cầu mượn sách</h3>
+
+@if (errorMessage != null)
+{
+    <div class="alert alert-danger">
+        <strong>Lỗi:</strong> @errorMessage
+        <button class="btn btn-sm btn-outline-danger" @onclick="Reload">Thử lại</button>
+    </div>
+}
+
+@if (isLoading)
+{
+    <p>Đang tải danh sách sách...</p>
+}
+else if (availableBooks == null)
+{
+    <div class="alert alert-warning">Không thể tải dữ liệu. Vui lòng thử lại sau.</div>
+}
+else if (availableBooks.Count == 0)
+{
+    <div class="alert alert-info">Hiện không có sách nào để mượn.</div>
+}
+else
+{
+    <div class="mb-3">
+        <label class="form-label">Chọn sách:</label>
+        <select class="form-select" @bind="selectedBookId">
+            <option value="">-- Chọn sách --</option>
+            @foreach (var book in availableBooks)
+            {
+                <option value="@book.BookId">@book.Title - (Còn: @book.AvailableQuantity)</option>
+            }
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Ghi chú (tuỳ chọn):</label>
+        <textarea class="form-control" @bind="notes"></textarea>
+    </div>
+    <button class="btn btn-primary" @onclick="SubmitRequest" disabled="@(selectedBookId <= 0)">Gửi yêu cầu</button>
+}
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success mt-3">@successMessage</div>
+}
+
+@code {
+    private List<Book>? availableBooks;
+    private int selectedBookId;
+    private string notes = "";
+    private string? errorMessage;
+    private string? successMessage;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await LoadBooks();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Lỗi khởi tạo: {ex.Message}";
+            isLoading = false;
+        }
+    }
+
+    private async Task LoadBooks()
+    {
+        try
+        {
+            isLoading = true;
+            errorMessage = null;
+            // Thử gọi API
+            var allBooks = await BookService.GetBooksAsync();
+            availableBooks = allBooks.Where(b => b.AvailableQuantity > 0).ToList();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Lỗi tải sách: {ex.Message}";
+            availableBooks = null;
+        }
+        finally
+        {
+            isLoading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task SubmitRequest()
+    {
+        try
+        {
+            errorMessage = null;
+            successMessage = null;
+            await BorrowService.CreateRequestAsync(selectedBookId, notes);
+            successMessage = "Đã gửi yêu cầu mượn sách thành công!";
+            selectedBookId = 0;
+            notes = "";
+            await LoadBooks();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Lỗi gửi yêu cầu: {ex.Message}";
+        }
+    }
+
+    private async Task Reload()
+    {
+        await LoadBooks();
+    }
+}

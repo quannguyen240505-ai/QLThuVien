@@ -1,0 +1,63 @@
+﻿@page "/return-books"
+@using AppQLTV.Models
+@using AppQLTV.Services
+@inject IBorrowService BorrowService
+
+<h3>🔄 Xác nhận trả sách</h3>
+
+@if (borrowedRequests == null)
+{
+    <p>Đang tải...</p>
+}
+else if (borrowedRequests.Count == 0)
+{
+    <div class="alert alert-info">Không có sách đang được mượn.</div>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Người dùng</th>
+                <th>Sách</th>
+                <th>Ngày mượn</th>
+                <th>Hạn trả</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in borrowedRequests)
+            {
+                <tr>
+                    <td>@r.UserName</td>
+                    <td>@r.BookTitle</td>
+                    <td>@r.ApproveDate?.ToString("dd/MM/yyyy")</td>
+                    <td>@r.DueDate?.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" @onclick="() => ConfirmReturn(r.Id)">Trả sách</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<BorrowRequest>? borrowedRequests;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadBorrowedBooks();
+    }
+
+    private async Task LoadBorrowedBooks()
+    {
+        borrowedRequests = await BorrowService.GetBorrowedRequestsAsync();
+    }
+
+    private async Task ConfirmReturn(int requestId)
+    {
+        await BorrowService.ConfirmReturnAsync(requestId);
+        await LoadBorrowedBooks();
+    }
+}

@@ -7,7 +7,6 @@ namespace APIQLTV.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    // [Authorize] // Tạm thời comment để test, sau này bỏ comment và thêm token
     public class BooksController : ControllerBase
     {
         private readonly IBookService _bookService;
@@ -16,6 +15,7 @@ namespace APIQLTV.Controllers
             _bookService = bookService;
         }
 
+        // Công khai: ai cũng xem được danh sách sách
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -23,6 +23,7 @@ namespace APIQLTV.Controllers
             return Ok(books);
         }
 
+        // Công khai: xem chi tiết sách
         [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -31,6 +32,7 @@ namespace APIQLTV.Controllers
             return Ok(book);
         }
 
+        // Công khai: tìm kiếm sách
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string keyword)
         {
@@ -38,7 +40,9 @@ namespace APIQLTV.Controllers
             return Ok(books);
         }
 
+        // 🔒 Admin và Librarian được tạo sách
         [HttpPost]
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> Create([FromBody] BookCreateUpdateDTO dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -46,7 +50,9 @@ namespace APIQLTV.Controllers
             return CreatedAtAction(nameof(GetById), new { id = newBook.BookId }, newBook);
         }
 
+        // 🔒 Admin và Librarian được cập nhật sách
         [HttpPut("{id}")]
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> Update(int id, [FromBody] BookCreateUpdateDTO dto)
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -55,7 +61,9 @@ namespace APIQLTV.Controllers
             return NoContent();
         }
 
+        // 🔒 Admin và Librarian được xóa sách
         [HttpDelete("{id}")]
+        [Authorize(Roles = "Admin, Librarian")]
         public async Task<IActionResult> Delete(int id)
         {
             var result = await _bookService.DeleteBookAsync(id);

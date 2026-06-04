@@ -1,0 +1,82 @@
+﻿@page "/manage-books/create"
+@using AppQLTV.Models
+@using AppQLTV.Services
+@inject IBookService BookService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<h3>📖 Thêm sách mới</h3>
+
+@if (isLoading)
+{
+    <p>Đang kiểm tra quyền...</p>
+}
+else if (!isAuthorized)
+{
+    <div class="alert alert-danger">Bạn không có quyền thực hiện chức năng này.</div>
+}
+else
+{
+    <EditForm Model="@bookDto" OnValidSubmit="@HandleSubmit">
+        <div class="mb-3"><label class="form-label">Tiêu đề</label><InputText class="form-control" @bind-Value="bookDto.Title" /></div>
+        <div class="mb-3"><label class="form-label">Tác giả</label><InputText class="form-control" @bind-Value="bookDto.Author" /></div>
+        <div class="mb-3"><label class="form-label">Thể loại</label><InputText class="form-control" @bind-Value="bookDto.Category" /></div>
+        <div class="mb-3"><label class="form-label">Nhà xuất bản</label><InputText class="form-control" @bind-Value="bookDto.Publisher" /></div>
+        <div class="mb-3"><label class="form-label">Năm xuất bản</label><InputNumber class="form-control" @bind-Value="bookDto.PublishYear" /></div>
+        <div class="mb-3"><label class="form-label">Số lượng</label><InputNumber class="form-control" @bind-Value="bookDto.Quantity" /></div>
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <a href="/manage-books" class="btn btn-secondary">Hủy</a>
+    </EditForm>
+}
+
+@code {
+    private BookCreateUpdateDTO bookDto = new();
+    private bool isAuthorized = false;
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckAuthorization();
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task CheckAuthorization()
+    {
+        try
+        {
+            var token = await JS.InvokeAsync<string?>("localStorage.getItem", "authToken");
+            var role = await JS.InvokeAsync<string?>("localStorage.getItem", "role");
+            var expirationText = await JS.InvokeAsync<string?>("localStorage.getItem", "tokenExpiration");
+            if (!string.IsNullOrWhiteSpace(token) && !string.IsNullOrWhiteSpace(expirationText) &&
+                DateTime.TryParse(expirationText, out DateTime expiration) && DateTime.Now < expiration &&
+                (role == "Admin" || role == "Librarian"))
+            {
+                isAuthorized = true;
+                return;
+            }
+            isAuthorized = false;
+            Navigation.NavigateTo("/", true);
+        }
+        catch
+        {
+            isAuthorized = false;
+            Navigation.NavigateTo("/", true);
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        var book = new Book
+        {
+            Title = bookDto.Title,
+            Author = bookDto.Author,
+            Category = bookDto.Category,
+            Publisher = bookDto.Publisher,
+            PublishYear = bookDto.PublishYear,
+            Quantity = bookDto.Quantity
+        };
+        await BookService.CreateBookAsync(book);
+        Navigation.NavigateTo("/manage-books");
+    }
+}

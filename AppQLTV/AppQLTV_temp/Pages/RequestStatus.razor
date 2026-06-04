@@ -1,0 +1,44 @@
+﻿@page "/request-status"
+@using AppQLTV.Models
+@using AppQLTV.Services
+@inject IBorrowService BorrowService
+
+<h3>⏳ Trạng thái yêu cầu</h3>
+
+@if (requests == null)
+{
+    <p>Đang tải...</p>
+}
+else if (requests.Count == 0)
+{
+    <div class="alert alert-info">Không có yêu cầu nào đang chờ xử lý.</div>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr><th>Sách</th><th>Ngày yêu cầu</th><th>Trạng thái</th><th>Ghi chú</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var r in requests)
+            {
+                <tr>
+                    <td>@r.BookTitle</td>
+                    <td>@r.RequestDate.ToString("dd/MM/yyyy")</td>
+                    <td>@r.Status</td>
+                    <td>@r.Notes</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<BorrowRequest>? requests;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var all = await BorrowService.GetMyRequestsAsync();
+        requests = all.Where(r => r.Status == "Pending" || r.Status == "Borrowed").ToList();
+    }
+}

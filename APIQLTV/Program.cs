@@ -74,6 +74,7 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddAuthorization();
 builder.Services.AddScoped<IBookService, BookService>();
 builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<IBorrowService, BorrowService>();
 
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())

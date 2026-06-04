@@ -1,0 +1,131 @@
+﻿@page "/manage-books/edit/{id:int}"
+@using AppQLTV.Models
+@using AppQLTV.Services
+@inject IBookService BookService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<h3>📖 Chỉnh sửa sách</h3>
+
+@if (isLoading)
+{
+    <p>Đang tải...</p>
+}
+else if (!isAuthorized)
+{
+    <div class="alert alert-danger">Bạn không có quyền thực hiện chức năng này.</div>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else if (book == null)
+{
+    <p>Không tìm thấy sách.</p>
+}
+else
+{
+    <EditForm Model="@book" OnValidSubmit="@HandleSubmit">
+        <div class="mb-3">
+            <label class="form-label">Tiêu đề</label>
+            <InputText class="form-control" @bind-Value="book.Title" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Tác giả</label>
+            <InputText class="form-control" @bind-Value="book.Author" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Thể loại</label>
+            <InputText class="form-control" @bind-Value="book.Category" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Nhà xuất bản</label>
+            <InputText class="form-control" @bind-Value="book.Publisher" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Năm xuất bản</label>
+            <InputNumber class="form-control" @bind-Value="book.PublishYear" />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Số lượng</label>
+            <InputNumber class="form-control" @bind-Value="book.Quantity" />
+        </div>
+        <button type="submit" class="btn btn-primary">Cập nhật</button>
+        <a href="/manage-books" class="btn btn-secondary">Hủy</a>
+    </EditForm>
+}
+
+@code {
+    [Parameter] public int id { get; set; }
+    private Book? book;
+    private bool isAuthorized = false;
+    private bool isLoading = true;
+    private string? errorMessage = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckAuthorization();
+        if (isAuthorized)
+        {
+            await LoadBook();
+        }
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private async Task CheckAuthorization()
+    {
+        try
+        {
+            var token = await JS.InvokeAsync<string?>("localStorage.getItem", "authToken");
+            var role = await JS.InvokeAsync<string?>("localStorage.getItem", "role");
+            var expirationText = await JS.InvokeAsync<string?>("localStorage.getItem", "tokenExpiration");
+
+            if (!string.IsNullOrWhiteSpace(token) && !string.IsNullOrWhiteSpace(expirationText) &&
+                DateTime.TryParse(expirationText, out DateTime expiration) && DateTime.Now < expiration &&
+                (role == "Admin" || role == "Librarian"))
+            {
+                isAuthorized = true;
+                return;
+            }
+            isAuthorized = false;
+            Navigation.NavigateTo("/", true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Lỗi kiểm tra quyền: {ex.Message}";
+            isAuthorized = false;
+        }
+    }
+
+    private async Task LoadBook()
+    {
+        try
+        {
+            book = await BookService.GetBookByIdAsync(id);
+            if (book == null)
+            {
+                errorMessage = "Không tìm thấy sách.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Lỗi tải sách: {ex.Message}";
+            book = null;
+        }
+    }
+
+    private async Task HandleSubmit()
+    {
+        try
+        {
+            // Lưu ý: chữ ký UpdateBookAsync ở đây là (Book book) - nếu khác thì sửa lại
+            await BookService.UpdateBookAsync(book);
+            Navigation.NavigateTo("/manage-books");
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Lỗi cập nhật: {ex.Message}";
+        }
+    }
+}

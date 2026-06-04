@@ -1,0 +1,44 @@
+﻿@page "/overdue-books"
+@using AppQLTV.Models
+@using AppQLTV.Services
+@inject IBorrowService BorrowService
+
+<h3>⚠️ Sách mượn quá hạn</h3>
+
+@if (overdueRequests == null)
+{
+    <p>Đang tải...</p>
+}
+else if (overdueRequests.Count == 0)
+{
+    <div class="alert alert-success">Không có sách nào quá hạn.</div>
+}
+else
+{
+    <table class="table table-bordered">
+        <thead>
+            <tr><th>Người dùng</th><th>Sách</th><th>Ngày mượn</th><th>Hạn trả</th><th>Quá hạn (ngày)</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var r in overdueRequests)
+            {
+                <tr>
+                    <td>@r.UserName</td>
+                    <td>@r.BookTitle</td>
+                    <td>@r.ApproveDate?.ToString("dd/MM/yyyy")</td>
+                    <td>@r.DueDate?.ToString("dd/MM/yyyy")</td>
+                    <td>@((DateTime.Now - r.DueDate.Value).Days)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<BorrowRequest>? overdueRequests;
+
+    protected override async Task OnInitializedAsync()
+    {
+        overdueRequests = await BorrowService.GetOverdueRequestsAsync();
+    }
+}

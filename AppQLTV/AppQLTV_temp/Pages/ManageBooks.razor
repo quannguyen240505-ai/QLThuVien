@@ -1,0 +1,197 @@
+﻿@page "/manage-books"
+@using AppQLTV.Models
+@using AppQLTV.Services
+@inject IBookService BookService
+@inject IJSRuntime JS
+@inject NavigationManager Navigation
+
+<h3>📖 Quản lý sách</h3>
+
+@if (isLoading)
+{
+    <p>Đang tải...</p>
+}
+else if (!isAuthorized)
+{
+    <div class="alert alert-danger">Bạn không có quyền truy cập trang này.</div>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+else
+{
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div class="d-flex align-items-center gap-2 flex-grow-1" style="max-width: 600px;">
+            <input type="text" class="form-control" @bind="keyword" @bind:event="oninput" placeholder="Tìm theo tên, tác giả, thể loại..." />
+            <button class="btn btn-primary m-0 px-4 text-nowrap" @onclick="Search">Tìm</button>
+            <button class="btn btn-secondary m-0 px-3 text-nowrap" @onclick="LoadBooks">🔄 Tải lại</button>
+        </div>
+        <div>
+            <a href="/manage-books/create" class="btn btn-success m-0 text-nowrap fw-bold shadow-sm">+ Thêm sách mới</a>
+        </div>
+    </div>
+
+    @if (books == null)
+    {
+        <p>Đang tải sách...</p>
+    }
+    else if (!books.Any())
+    {
+        <div class="alert alert-warning">Không có sách nào.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Tiêu đề</th>
+                        <th>Tác giả</th>
+                        <th>Thể loại</th>
+                        <th>Năm XB</th>
+                        <th>Tổng số</th>
+                        <th>Còn lại</th>
+                        <th>Hành động</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var book in books)
+                    {
+                        <tr>
+                            <td>@book.BookId</td>
+                            <td>@book.Title</td>
+                            <td>@book.Author</td>
+                            <td>@book.Category</td>
+                            <td>@book.PublishYear</td>
+                            <td>@book.Quantity</td>
+                            <td>@book.AvailableQuantity</td>
+                            <td>
+                                <a href="/manage-books/edit/@book.BookId" class="btn btn-sm btn-warning">Sửa</a>
+                                <button class="btn btn-sm btn-danger ms-1" @onclick="() => Delete(book.BookId)">Xóa</button>
+                                <button class="btn btn-sm btn-info ms-1" @onclick="() => ToggleDetail(book.BookId)">Chi tiết</button>
+                            </td>
+                        </tr>
+                        @if (expandedBookId == book.BookId)
+                        {
+                            <tr class="book-detail-row">
+                                <td colspan="8">
+                                    <div class="card mt-2 mb-2">
+                                        <div class="card-header">
+                                            <strong>Thông tin chi tiết: @book.Title</strong>
+                                        </div>
+                                        <div class="card-body">
+                                            <p><strong>Nhà xuất bản:</strong> @book.Publisher</p>
+                                            <p><strong>Tác giả:</strong> @book.Author</p>
+                                            <p><strong>Thể loại:</strong> @book.Category</p>
+                                            <p><strong>Năm xuất bản:</strong> @book.PublishYear</p>
+                                            <p><strong>Tổng số:</strong> @book.Quantity</p>
+                                            <p><strong>Số lượng còn lại:</strong> @book.AvailableQuantity</p>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}
+
+@code {
+    private List<Book> books = new();
+    private string keyword = "";
+    private bool isAuthorized = false;
+    private bool isLoading = true;
+    private string? errorMessage = null;
+    private int? expandedBookId = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CheckAuthorization();
+        if (isAuthorized) await LoadBooks();
+        isLoading = false;
+        StateHasChanged();
+    }
+
+    private void ToggleDetail(int bookId)
+    {
+        if (expandedBookId == bookId)
+            expandedBookId = null;
+        else
+            expandedBookId = bookId;
+    }
+
+    private async Task CheckAuthorization()
+    {
+        try
+        {
+            var token = await JS.InvokeAsync<string?>("localStorage.getItem", "authToken");
+            var role = await JS.InvokeAsync<string?>("localStorage.getItem", "role");
+            var expirationText = await JS.InvokeAsync<string?>("localStorage.getItem", "tokenExpiration");
+
+            if (!string.IsNullOrWhiteSpace(token) && !string.IsNullOrWhiteSpace(expirationText) &&
+                DateTime.TryParse(expirationText, out DateTime expiration) && DateTime.Now < expiration &&
+                (role == "Admin" || role == "Librarian"))
+            {
+                isAuthorized = true;
+                return;
+            }
+            isAuthorized = false;
+            Navigation.NavigateTo("/", true);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Lỗi kiểm tra quyền: {ex.Message}";
+            isAuthorized = false;
+        }
+    }
+
+    private async Task LoadBooks()
+    {
+        try
+        {
+            books = await BookService.GetBooksAsync();
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Lỗi tải sách: {ex.Message}";
+            books = new List<Book>();
+        }
+    }
+
+    private async Task Search()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+                await LoadBooks();
+            else
+                books = await BookService.SearchBooksAsync(keyword);
+            errorMessage = null;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Lỗi tìm kiếm: {ex.Message}";
+        }
+    }
+
+    private async Task Delete(int id)
+    {
+        try
+        {
+            if (await JS.InvokeAsync<bool>("confirm", "Bạn có chắc muốn xóa sách này?"))
+            {
+                await BookService.DeleteBookAsync(id);
+                await LoadBooks();
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Lỗi xóa sách: {ex.Message}";
+        }
+    }
+}
