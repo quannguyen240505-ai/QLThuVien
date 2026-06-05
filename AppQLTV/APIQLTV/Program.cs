@@ -42,6 +42,11 @@ builder.Services.AddCors(options =>
             .AllowAnyMethod();
     });
 });
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("LibrarianOrAdmin", policy =>
+        policy.RequireRole("Librarian", "Admin"));
+});
 
 // ===== JWT AUTHENTICATION =====
 var jwtKey = builder.Configuration["Jwt:Key"];
