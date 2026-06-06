@@ -36,11 +36,13 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 "https://localhost:7028",
-                "http://localhost:5246"
+                "http://localhost:5246",
+                "http://localhost:4200"
             )
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
+
 });
 
 // ===== JWT AUTHENTICATION =====
@@ -120,6 +122,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("AllowBlazorClient");
+app.UseCors("AllowAngular");
 
 app.UseAuthentication();
 app.UseAuthorization();
