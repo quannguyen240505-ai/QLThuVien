@@ -1,0 +1,164 @@
+﻿@page "/book-detail/{id:int}"
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Chi tiết sách - Thư viện</PageTitle>
+
+<div class="book-detail-container">
+    @if (isLoading)
+    {
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status"></div>
+            <p class="mt-3 text-muted">Đang tải thông tin sách...</p>
+        </div>
+    }
+    else if (showNotFound)
+    {
+        <div class="alert alert-warning shadow-sm rounded-4 p-5 text-center" style="border-left: 5px solid #ffc107;">
+            <i class="bi bi-emoji-frown" style="font-size: 4rem;"></i>
+            <h3 class="mt-3">Không tìm thấy sách</h3>
+            <p class="mb-4">Sách bạn yêu cầu không tồn tại hoặc đã bị xóa khỏi thư viện.</p>
+            <button class="btn btn-primary btn-lg px-4 rounded-pill" @onclick="GoBack">
+                <i class="bi bi-arrow-left"></i> Quay lại danh sách
+            </button>
+        </div>
+    }
+    else if (book != null)
+    {
+        <div class="row g-4">
+            <!-- Cột ảnh bìa -->
+            <div class="col-md-5 col-lg-4">
+                <div class="book-cover-card">
+                    <div class="book-cover-placeholder">
+                        <i class="bi bi-journal-bookmark-fill"></i>
+                    </div>
+                    <div class="mt-3 text-center">
+                        @if (book.AvailableCopies > 0)
+                        {
+                            <span class="badge bg-success px-3 py-2 rounded-pill">
+                                <i class="bi bi-check-circle"></i> Sẵn sàng cho mượn
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-danger px-3 py-2 rounded-pill">
+                                <i class="bi bi-x-circle"></i> Đã được mượn hết
+                            </span>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cột thông tin chi tiết -->
+            <div class="col-md-7 col-lg-8">
+                <div class="book-info-card">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
+                        <span class="badge bg-primary px-3 py-2 rounded-pill">@(book.Category ?? "Chưa phân loại")</span>
+                        <span class="text-muted"><i class="bi bi-upc-scan"></i> Mã sách: #@book.Id</span>
+                    </div>
+                    <h1 class="book-title">@book.Title</h1>
+                    <h4 class="book-author">
+                        <i class="bi bi-pencil"></i> @book.Author
+                    </h4>
+
+                    <hr class="my-4" />
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <div class="info-item">
+                                <div class="info-label"><i class="bi bi-building"></i> Nhà xuất bản</div>
+                                <div class="info-value">@(book.Publisher ?? "Chưa có")</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="info-item">
+                                <div class="info-label"><i class="bi bi-calendar"></i> Năm xuất bản</div>
+                                <div class="info-value">@(book.PublishYear > 0 ? book.PublishYear.ToString() : "Không rõ")</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="info-item">
+                                <div class="info-label"><i class="bi bi-upc-scan"></i> ISBN</div>
+                                <div class="info-value">@(book.ISBN ?? "Chưa có")</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="info-item">
+                                <div class="info-label"><i class="bi bi-stack"></i> Số lượng</div>
+                                <div class="info-value">
+                                    <span class="fw-bold">@book.TotalCopies</span> cuốn
+                                    <span class="text-muted">(còn <strong class="@(book.AvailableCopies > 0 ? "text-success" : "text-danger")">@book.AvailableCopies</strong>)</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="book-description">
+                        <h5><i class="bi bi-journal-text"></i> Mô tả nội dung</h5>
+                        <p>@(string.IsNullOrEmpty(book.Description) ? "Chưa có mô tả cho sách này." : book.Description)</p>
+                    </div>
+
+                    <div class="mt-4">
+                        <button class="btn btn-outline-secondary rounded-pill px-4" @onclick="GoBack">
+                            <i class="bi bi-arrow-left"></i> Quay lại danh sách
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public int id { get; set; }
+    private Book? book;
+    private bool isLoading = true;
+    private bool showNotFound = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (id <= 0)
+        {
+            showNotFound = true;
+            isLoading = false;
+            return;
+        }
+
+        try
+        {
+            book = await Http.GetFromJsonAsync<Book>($"api/books/{id}");
+            if (book == null)
+            {
+                showNotFound = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Lỗi tải sách: {ex.Message}");
+            showNotFound = true;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/books");
+    }
+
+    public class Book
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Author { get; set; } = string.Empty;
+        public string? ISBN { get; set; }
+        public string? Publisher { get; set; }
+        public int PublishYear { get; set; }
+        public string? Category { get; set; }
+        public string? Description { get; set; }
+        public int TotalCopies { get; set; }
+        public int AvailableCopies { get; set; }
+    }
+}

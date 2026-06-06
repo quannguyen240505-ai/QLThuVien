@@ -8,14 +8,12 @@
             <div class="brand-icon">
                 <i class="bi bi-book-half"></i>
             </div>
-
             <div class="brand-text">
                 <div class="brand-name">QNU-LIBRARY</div>
                 <div class="brand-subtitle">Library System</div>
             </div>
         </div>
-
-        <button class="collapse-btn" @onclick="ToggleSidebar">
+        <button class="collapse-btn" @onclick="() => ToggleSidebar.InvokeAsync(!IsCollapsed)">
             <i class="bi @(IsCollapsed ? "bi-chevron-right" : "bi-chevron-left")"></i>
         </button>
     </div>
@@ -26,188 +24,149 @@
     </div>
 
     <nav class="menu">
-
         <div class="menu-title">Khách</div>
-
         <NavLink class="menu-link" href="" Match="NavLinkMatch.All">
-            <i class="bi bi-house-door"></i>
-            <span>Trang chủ</span>
+            <i class="bi bi-house-door"></i> <span>Trang chủ</span>
         </NavLink>
-
         <NavLink class="menu-link" href="books">
-            <i class="bi bi-book"></i>
-            <span>Danh sách sách</span>
+            <i class="bi bi-book"></i> <span>Danh sách sách</span>
         </NavLink>
-
         <NavLink class="menu-link" href="search-books">
-            <i class="bi bi-search"></i>
-            <span>Tìm kiếm sách</span>
+            <i class="bi bi-search"></i> <span>Tìm kiếm sách</span>
         </NavLink>
-
         <NavLink class="menu-link" href="book-detail">
-            <i class="bi bi-info-circle"></i>
-            <span>Thông tin sách</span>
+            <i class="bi bi-info-circle"></i> <span>Thông tin sách</span>
         </NavLink>
         <NavLink class="menu-link" href="library-info">
-            <i class="bi bi-info-square"></i>
-            <span>Thông tin thư viện</span>
+            <i class="bi bi-info-square"></i> <span>Thông tin thư viện</span>
         </NavLink>
-
-
-        @if (IsMemberOrHigher)
-        {
-            <div class="menu-title">Thành viên</div>
-
-            <NavLink class="menu-link" href="readers">
-                <i class="bi bi-people"></i>
-                <span>Danh sách độc giả</span>
-            </NavLink>
-
-            <NavLink class="menu-link" href="readers/create">
-                <i class="bi bi-person-plus"></i>
-                <span>Thêm độc giả</span>
-            </NavLink>
-
-            <NavLink class="menu-link" href="borrow-books">
-                <i class="bi bi-journal-arrow-up"></i>
-                <span>Lập phiếu mượn</span>
-            </NavLink>
-
-            <NavLink class="menu-link" href="return-books">
-                <i class="bi bi-journal-check"></i>
-                <span>Trả sách</span>
-            </NavLink>
-
-            <NavLink class="menu-link" href="borrow-history">
-                <i class="bi bi-clock-history"></i>
-                <span>Lịch sử mượn/trả</span>
-            </NavLink>
-        }
-
-
-        @if (IsLibrarianOrAdmin)
-        {
-            <div class="menu-title">Thủ thư</div>
-
-            <NavLink class="menu-link" href="manage-books">
-                <i class="bi bi-journal-plus"></i>
-                <span>Quản lý sách</span>
-            </NavLink>
-
-            <NavLink class="menu-link" href="approve-borrow">
-                <i class="bi bi-check2-square"></i>
-                <span>Duyệt yêu cầu mượn</span>
-            </NavLink>
-
-            <NavLink class="menu-link" href="return-books">
-                <i class="bi bi-arrow-return-left"></i>
-                <span>Xác nhận trả sách</span>
-            </NavLink>
-
-            <NavLink class="menu-link" href="overdue-books">
-                <i class="bi bi-exclamation-triangle"></i>
-                <span>Sách quá hạn</span>
-            </NavLink>
-        }
-
-
-        @if (IsAdmin)
-        {
-            <div class="menu-title">Quản trị</div>
-
-            <NavLink class="menu-link" href="accounts">
-                <i class="bi bi-person-gear"></i>
-                <span>Quản lý tài khoản</span>
-            </NavLink>
-
-            <NavLink class="menu-link" href="system">
-                <i class="bi bi-sliders"></i>
-                <span>Quản lý hệ thống</span>
-            </NavLink>
-
-            <NavLink class="menu-link" href="statistics">
-                <i class="bi bi-bar-chart"></i>
-                <span>Thống kê hoạt động</span>
-            </NavLink>
-        }
-
-    </nav>
-
-    <div class="sidebar-bottom">
 
         @if (isLoggedIn)
         {
-            <button class="menu-link logout logout-button" @onclick="Logout">
-                <i class="bi bi-box-arrow-left"></i>
-                <span>Đăng xuất</span>
-            </button>
+            <div class="menu-title">Thành viên</div>
+            <NavLink class="menu-link" href="readers">
+                <i class="bi bi-people"></i> <span>Danh sách độc giả</span>
+            </NavLink>
+            <NavLink class="menu-link" href="readers/create">
+                <i class="bi bi-person-plus"></i> <span>Thêm độc giả</span>
+            </NavLink>
+            <NavLink class="menu-link" href="borrow-books">
+                <i class="bi bi-journal-arrow-up"></i> <span>Lập phiếu mượn</span>
+            </NavLink>
+            <NavLink class="menu-link" href="return-books">
+                <i class="bi bi-journal-check"></i> <span>Trả sách</span>
+            </NavLink>
+            <NavLink class="menu-link" href="borrow-history">
+                <i class="bi bi-clock-history"></i> <span>Lịch sử mượn/trả</span>
+            </NavLink>
         }
 
+        @if (isLibrarianOrAdmin)
+        {
+            <div class="menu-title">Thủ thư</div>
+            <NavLink class="menu-link" href="librarian/books">
+                <i class="bi bi-journal-plus"></i> <span>Quản lý sách</span>
+            </NavLink>
+            <NavLink class="menu-link" href="librarian/borrows">
+                <i class="bi bi-check2-square"></i> <span>Duyệt mượn/trả</span>
+            </NavLink>
+            <NavLink class="menu-link" href="overdue-books">
+                <i class="bi bi-exclamation-triangle"></i> <span>Sách quá hạn</span>
+            </NavLink>
+        }
+
+        @if (isAdmin)
+        {
+            <div class="menu-title">Quản trị</div>
+            <NavLink class="menu-link" href="accounts">
+                <i class="bi bi-person-gear"></i> <span>Quản lý tài khoản</span>
+            </NavLink>
+            <NavLink class="menu-link" href="system">
+                <i class="bi bi-sliders"></i> <span>Quản lý hệ thống</span>
+            </NavLink>
+            <NavLink class="menu-link" href="statistics">
+                <i class="bi bi-bar-chart"></i> <span>Thống kê hoạt động</span>
+            </NavLink>
+        }
+    </nav>
+
+    <div class="sidebar-bottom">
+        @if (isLoggedIn)
+        {
+            <button class="menu-link logout logout-button" @onclick="Logout">
+                <i class="bi bi-box-arrow-left"></i> <span>Đăng xuất</span>
+            </button>
+        }
         <div class="dark-mode">
             <div>
-                <i class="bi bi-moon"></i>
-                <span>Dark Mode</span>
+                <i class="bi bi-moon"></i> <span>Dark Mode</span>
             </div>
-
             <label class="switch">
                 <input type="checkbox" />
                 <span></span>
             </label>
         </div>
     </div>
-
 </div>
 
 @code {
     [Parameter] public bool IsCollapsed { get; set; }
-    [Parameter] public EventCallback ToggleSidebar { get; set; }
+    [Parameter] public EventCallback<bool> ToggleSidebar { get; set; }
 
-    private string role = "";
     private bool isLoggedIn = false;
+    private string? role = "";
 
-    private bool IsAdmin => role == "Admin";
+    private bool isAdmin => role == "Admin";
+    private bool isLibrarianOrAdmin => role == "Librarian" || role == "Admin";
 
-    private bool IsLibrarianOrAdmin =>
-        role == "Librarian" || role == "Admin";
-
-    private bool IsMemberOrHigher =>
-        role == "Member" || role == "Librarian" || role == "Admin";
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override async Task OnInitializedAsync()
     {
-        if (firstRender)
-        {
-            await CheckLoginStatus();
-            StateHasChanged();
-        }
+        await CheckLoginStatus();
+        await JS.InvokeVoidAsync("window.addEventListener", "storage", DotNetObjectReference.Create(this), nameof(OnStorageChanged));
+    }
+
+    [JSInvokable]
+    public async Task OnStorageChanged()
+    {
+        await CheckLoginStatus();
+        await InvokeAsync(StateHasChanged);
     }
 
     private async Task CheckLoginStatus()
     {
-        var token = await JS.InvokeAsync<string?>("localStorage.getItem", "authToken");
-        var expirationText = await JS.InvokeAsync<string?>("localStorage.getItem", "tokenExpiration");
-
-        if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(expirationText))
+        try
         {
-            role = "";
+            var token = await JS.InvokeAsync<string?>("localStorage.getItem", "authToken");
+            var expirationText = await JS.InvokeAsync<string?>("localStorage.getItem", "tokenExpiration");
+
+            if (string.IsNullOrWhiteSpace(token) || string.IsNullOrWhiteSpace(expirationText))
+            {
+                isLoggedIn = false;
+                role = "";
+                return;
+            }
+
+            if (!DateTime.TryParse(expirationText, out DateTime expiration))
+            {
+                await ClearAuthData();
+                return;
+            }
+
+            if (DateTime.Now >= expiration)
+            {
+                await ClearAuthData();
+                return;
+            }
+
+            role = await JS.InvokeAsync<string?>("localStorage.getItem", "role") ?? "";
+            isLoggedIn = true;
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Lỗi kiểm tra đăng nhập: {ex.Message}");
             isLoggedIn = false;
-            return;
+            role = "";
         }
-
-        if (!DateTime.TryParse(expirationText, out DateTime expiration))
-        {
-            await ClearAuthData();
-            return;
-        }
-
-        if (DateTime.Now >= expiration)
-        {
-            await ClearAuthData();
-            return;
-        }
-
-        role = await JS.InvokeAsync<string?>("localStorage.getItem", "role") ?? "";
-        isLoggedIn = true;
     }
 
     private async Task ClearAuthData()
@@ -217,9 +176,8 @@
         await JS.InvokeVoidAsync("localStorage.removeItem", "gmail");
         await JS.InvokeVoidAsync("localStorage.removeItem", "role");
         await JS.InvokeVoidAsync("localStorage.removeItem", "tokenExpiration");
-
-        role = "";
         isLoggedIn = false;
+        role = "";
     }
 
     private async Task Logout()
