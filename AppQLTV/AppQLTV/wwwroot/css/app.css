@@ -1,3 +1,4 @@
+@import url('app.css');
 html, body {
     font-family: "Segoe UI", Arial, sans-serif;
 
@@ -129,3 +130,195 @@ html, body {
         border-radius: 12px;
         font-weight: 600;
     }
+
+    // readerPage 
+        .reader-page {
+        padding: 24px;
+        background: #f4f7fb;
+        min-height: 100vh;
+    }
+
+    .reader-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+        .reader-header h2 {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .reader-header p {
+            color: #6c757d;
+            margin: 0;
+        }
+
+    .reader-stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+        .reader-stat-card p {
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .reader-stat-card h3 {
+            font-weight: 700;
+            margin: 0;
+        }
+
+    .reader-toolbar {
+        display: flex;
+        gap: 10px;
+        background: white;
+        padding: 16px;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+        .reader-toolbar input {
+            max-width: 500px;
+        }
+
+    .reader-table-wrapper {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .reader-table {
+        margin-bottom: 0;
+    }
+
+        .reader-table thead th {
+            background: #0d6efd;
+            color: white;
+            padding: 14px;
+            white-space: nowrap;
+        }
+
+        .reader-table tbody td {
+            padding: 14px;
+            vertical-align: middle;
+        }
+
+        .reader-table tbody tr:hover {
+            background: #f1f6ff;
+        }
+
+    .badge {
+        padding: 8px 10px;
+        border-radius: 20px;
+    }
+
+//create-reader
+.reader-create-page {
+    min-height: 100vh;
+    padding: 32px;
+    background: linear-gradient(135deg, #eef4ff 0%, #f8fbff 100%);
+}
+
+.reader-create-header {
+    max-width: 1050px;
+    margin: 0 auto 24px auto;
+    padding: 24px 28px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #0d6efd, #4dabf7);
+    color: white;
+    box-shadow: 0 12px 30px rgba(13, 110, 253, 0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .reader-create-header h2 {
+        margin: 0;
+        font-weight: 800;
+    }
+
+    .reader-create-header p {
+        margin: 6px 0 0 0;
+        opacity: 0.9;
+    }
+
+.reader-create-card {
+    max-width: 1050px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 22px;
+    padding: 32px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+}
+
+.form-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0d6efd;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.reader-create-card .form-label {
+    font-weight: 600;
+    color: #344054;
+    margin-bottom: 8px;
+}
+
+.custom-input {
+    border-radius: 12px;
+    border: 1px solid #d0d5dd;
+    padding: 11px 14px;
+    transition: all 0.2s ease;
+}
+
+    .custom-input:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.12);
+    }
+
+.reader-create-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 22px;
+    border-top: 1px solid #e9ecef;
+}
+
+    .reader-create-actions .btn {
+        border-radius: 12px;
+        font-weight: 600;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+@media (max-width: 768px) {
+    .reader-create-page {
+        padding: 16px;
+    }
+
+    .reader-create-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .reader-create-card {
+        padding: 22px;
+    }
+
+    .reader-create-actions {
+        flex-direction: column;
+    }
+
+        .reader-create-actions .btn {
+            width: 100%;
+        }
+}

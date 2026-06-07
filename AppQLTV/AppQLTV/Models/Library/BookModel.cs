@@ -1,12 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-namespace APIQLTV.Models
+﻿namespace AppQLTV.Models.Library
 {
-    [Table("books")]
-    public class Book
+    public class BookModel
     {
-        [Key]
         public int Id { get; set; }
 
         public string Title { get; set; } = string.Empty;
@@ -21,12 +16,10 @@ namespace APIQLTV.Models
 
         public string? Category { get; set; }
 
-        public string? Description { get; set; }
-
         public int TotalCopies { get; set; }
 
         public int AvailableCopies { get; set; }
 
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; }
     }
 }
