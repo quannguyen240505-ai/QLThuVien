@@ -1,11 +1,7 @@
-﻿using APIQLTV.Models;
-using Microsoft.AspNetCore.Authorization;
+﻿using APIQLTV.DTOs.Borrow;
+using APIQLTV.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace APIQLTV.Controllers
 {
@@ -20,34 +16,35 @@ namespace APIQLTV.Controllers
             _context = context;
         }
 
-        // POST: api/Borrow - Tạo phiếu mượn mới
-        [HttpPost]
-        [Authorize(Roles = "Librarian,Admin,Member")]
-        public async Task<IActionResult> CreateBorrowTicket([FromBody] CreateBorrowRequest request)
+        // Gửi yêu cầu mượn sách - trạng thái Pending
+        [HttpPost("request")]
+        public async Task<IActionResult> SendBorrowRequest(BorrowRequest request)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            var totalQuantity = request.Books.Sum(x => x.Quantity);
+
+            if (totalQuantity > 5)
+                return BadRequest("Mỗi lần chỉ được mượn tối đa 5 quyển sách.");
+
+            var maxDueDate = DateTime.Now.Date.AddDays(14);
+
+            if (request.DueDate.Date > maxDueDate)
+                return BadRequest("Số ngày mượn tối đa là 14 ngày.");
 
             var reader = await _context.Readers.FindAsync(request.ReaderId);
-            if (reader == null)
-                return NotFound("Độc giả không tồn tại.");
 
-            foreach (var item in request.Books)
-            {
-                var book = await _context.Books.FindAsync(item.BookId);
-                if (book == null)
-                    return NotFound($"Sách có ID {item.BookId} không tồn tại.");
-                if (book.AvailableCopies < item.Quantity)
-                    return BadRequest($"Sách '{book.Title}' không đủ số lượng (còn {book.AvailableCopies}).");
-            }
+            if (reader == null)
+                return NotFound("Không tìm thấy độc giả.");
+
+            if (request.Books == null || request.Books.Count == 0)
+                return BadRequest("Chưa chọn sách để mượn.");
 
             var ticket = new BorrowTicket
             {
                 ReaderId = request.ReaderId,
                 BorrowDate = DateTime.Now,
-                DueDate = DateTime.Now.AddDays(request.DueDays > 0 ? request.DueDays : 14),
-                Status = "Borrowing",
-                Note = request.Note
+                DueDate = request.DueDate,
+                Note = request.Note,
+                Status = "Pending"
             };
 
             _context.BorrowTickets.Add(ticket);
@@ -56,158 +53,204 @@ namespace APIQLTV.Controllers
             foreach (var item in request.Books)
             {
                 var book = await _context.Books.FindAsync(item.BookId);
-                book.AvailableCopies -= item.Quantity;
+
+                if (book == null)
+                    return BadRequest($"Không tìm thấy sách ID = {item.BookId}");
+
+                if (book.AvailableCopies < item.Quantity)
+                    return BadRequest($"Sách {book.Title} không đủ số lượng.");
 
                 var detail = new BorrowDetail
                 {
                     BorrowTicketId = ticket.BorrowTicketId,
                     BookId = item.BookId,
                     Quantity = item.Quantity,
-                    Status = "Borrowing"
+                    Status = "Pending"
                 };
+
                 _context.BorrowDetails.Add(detail);
             }
 
             await _context.SaveChangesAsync();
-            return Ok(new { ticketId = ticket.BorrowTicketId, message = "Tạo phiếu mượn thành công." });
+
+            return Ok(new
+            {
+                message = "Gửi yêu cầu mượn sách thành công.",
+                borrowTicketId = ticket.BorrowTicketId
+            });
         }
 
-        // PUT: api/Borrow/{id}/return - Xác nhận trả sách
-        [HttpPut("{id}/return")]
-        [Authorize(Roles = "Librarian,Admin")]
-        public async Task<IActionResult> ReturnBook(int id)
+        // Duyệt yêu cầu mượn sách - Pending -> Borrowing
+        [HttpPut("{id}/approve")]
+        public async Task<IActionResult> ApproveBorrowRequest(int id)
         {
             var ticket = await _context.BorrowTickets
-                .Include(bt => bt.BorrowDetails)
-                .FirstOrDefaultAsync(bt => bt.BorrowTicketId == id);
+                .Include(t => t.BorrowDetails)
+                .FirstOrDefaultAsync(t => t.BorrowTicketId == id);
 
             if (ticket == null)
-                return NotFound("Phiếu mượn không tồn tại.");
+                return NotFound("Không tìm thấy phiếu mượn.");
 
-            if (ticket.Status != "Borrowing")
-                return BadRequest("Sách đã được trả hoặc không trong trạng thái mượn.");
+            if (ticket.Status != "Pending")
+                return BadRequest("Phiếu này không ở trạng thái chờ duyệt.");
 
-            ticket.ReturnDate = DateTime.Now;
-            ticket.Status = "Returned";
+            if (ticket.BorrowDetails == null || ticket.BorrowDetails.Count == 0)
+                return BadRequest("Phiếu mượn không có chi tiết sách.");
 
             foreach (var detail in ticket.BorrowDetails)
             {
                 var book = await _context.Books.FindAsync(detail.BookId);
+
+                if (book == null)
+                    return BadRequest($"Không tìm thấy sách ID = {detail.BookId}");
+
+                if (book.AvailableCopies < detail.Quantity)
+                    return BadRequest($"Sách {book.Title} không đủ số lượng.");
+
+                book.AvailableCopies -= detail.Quantity;
+                detail.Status = "Borrowing";
+            }
+
+            ticket.Status = "Borrowing";
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Đã duyệt yêu cầu mượn sách." });
+        }
+
+        // Trả sách
+        [HttpPut("{id}/return")]
+        public async Task<IActionResult> ReturnBooks(int id)
+        {
+            var ticket = await _context.BorrowTickets
+                .Include(t => t.BorrowDetails)
+                .FirstOrDefaultAsync(t => t.BorrowTicketId == id);
+
+            if (ticket == null)
+                return NotFound("Không tìm thấy phiếu mượn.");
+
+            if (ticket.Status == "Returned")
+                return BadRequest("Phiếu này đã được trả trước đó.");
+
+            if (ticket.Status == "Pending")
+                return BadRequest("Phiếu này chưa được duyệt.");
+
+            int overdueDays = 0;
+            int fineAmount = 0;
+
+            if (DateTime.Now.Date > ticket.DueDate.Date)
+            {
+                overdueDays =
+                    (DateTime.Now.Date - ticket.DueDate.Date).Days;
+
+                fineAmount = overdueDays * 5000;
+            }
+
+            foreach (var detail in ticket.BorrowDetails)
+            {
+                var book = await _context.Books.FindAsync(detail.BookId);
+
                 if (book != null)
                 {
                     book.AvailableCopies += detail.Quantity;
                 }
+
                 detail.Status = "Returned";
             }
 
+            ticket.Status = "Returned";
+            ticket.ReturnDate = DateTime.Now;
+
             await _context.SaveChangesAsync();
-            return Ok(new { message = "Trả sách thành công" });
+
+            return Ok(new
+            {
+                message = "Trả sách thành công",
+                overdueDays,
+                fineAmount
+            });
         }
-
-        // GET: api/Borrow/history - Lấy lịch sử mượn/trả (có phân trang, lọc)
+        // Lịch sử mượn
         [HttpGet("history")]
-        [Authorize]
-        public async Task<IActionResult> GetBorrowHistory([FromQuery] int page = 1, [FromQuery] int pageSize = 10, [FromQuery] string? readerName = null, [FromQuery] string? status = null)
+        public async Task<IActionResult> GetBorrowHistory()
         {
-            var query = from bt in _context.BorrowTickets
-                        join r in _context.Readers on bt.ReaderId equals r.ReaderId
-                        select new { bt, r };
-
-            if (!string.IsNullOrEmpty(readerName))
-                query = query.Where(x => x.r.FullName.Contains(readerName));
-            if (!string.IsNullOrEmpty(status))
-                query = query.Where(x => x.bt.Status == status);
-
-            var total = await query.CountAsync();
-
-            var items = await query
-                .OrderByDescending(x => x.bt.BorrowDate)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .Select(x => new
+            var history = await _context.BorrowTickets
+                .Include(t => t.Reader)
+                .Include(t => t.BorrowDetails)
+                .ThenInclude(d => d.Book)
+                .OrderBy(t => t.BorrowDate)
+                .Select(t => new
                 {
-                    x.bt.BorrowTicketId,
-                    ReaderName = x.r.FullName,
-                    BorrowDate = x.bt.BorrowDate,
-                    DueDate = x.bt.DueDate,
-                    ReturnDate = x.bt.ReturnDate,
-                    Status = x.bt.Status,
-                    Books = _context.BorrowDetails
-                        .Where(bd => bd.BorrowTicketId == x.bt.BorrowTicketId)
-                        .Join(_context.Books, bd => bd.BookId, b => b.Id, (bd, b) => new { bd.Quantity, b.Title })
-                        .ToList()
+                    t.BorrowTicketId,
+                    ReaderId = t.ReaderId,
+                    ReaderName = t.Reader != null ? t.Reader.FullName : "",
+                    t.BorrowDate,
+                    t.DueDate,
+                    t.ReturnDate,
+                    t.Status,
+                    t.Note,
+                    Details = t.BorrowDetails.Select(d => new
+                    {
+                        d.BorrowDetailId,
+                        d.BookId,
+                        BookTitle = d.Book != null ? d.Book.Title : "",
+                        d.Quantity,
+                        d.Status
+                    }).ToList()
                 })
                 .ToListAsync();
-
-            return Ok(new { total, page, pageSize, items });
-        }
-
-        // GET: api/Borrow/reader/{readerId} - Lấy lịch sử mượn của một độc giả
-        [HttpGet("reader/{readerId}")]
-        [Authorize]
-        public async Task<IActionResult> GetBorrowByReader(int readerId)
-        {
-            var reader = await _context.Readers.FindAsync(readerId);
-            if (reader == null)
-                return NotFound("Độc giả không tồn tại.");
-
-            var history = await (from bt in _context.BorrowTickets
-                                 where bt.ReaderId == readerId
-                                 join r in _context.Readers on bt.ReaderId equals r.ReaderId
-                                 orderby bt.BorrowDate descending
-                                 select new
-                                 {
-                                     bt.BorrowTicketId,
-                                     BorrowDate = bt.BorrowDate,
-                                     DueDate = bt.DueDate,
-                                     ReturnDate = bt.ReturnDate,
-                                     Status = bt.Status,
-                                     Books = _context.BorrowDetails
-                                         .Where(bd => bd.BorrowTicketId == bt.BorrowTicketId)
-                                         .Join(_context.Books, bd => bd.BookId, b => b.Id, (bd, b) => new { bd.Quantity, b.Title })
-                                         .ToList()
-                                 }).ToListAsync();
 
             return Ok(history);
         }
 
-        // GET: api/Borrow/pending - Lấy danh sách phiếu mượn đang chờ (dành cho Librarian/Admin)
-        [HttpGet("pending")]
-        [Authorize(Roles = "Librarian,Admin")]
-        public async Task<IActionResult> GetPendingBorrows()
+        // Lịch sử theo độc giả
+        [HttpGet("reader/{readerId}")]
+        public async Task<IActionResult> GetBorrowByReader(int readerId)
         {
-            var pending = await (
-                from bt in _context.BorrowTickets
-                join r in _context.Readers on bt.ReaderId equals r.ReaderId
-                join bd in _context.BorrowDetails on bt.BorrowTicketId equals bd.BorrowTicketId
-                join b in _context.Books on bd.BookId equals b.Id
-                where bt.Status == "Borrowing" && bt.ReturnDate == null
-                select new
-                {
-                    Id = bt.BorrowTicketId,
-                    ReaderName = r.FullName,
-                    BookTitle = b.Title,
-                    BorrowDate = bt.BorrowDate,
-                    DueDate = bt.DueDate,
-                    Status = bt.Status
-                })
+            var result = await _context.BorrowTickets
+                .Include(t => t.Reader)
+                .Include(t => t.BorrowDetails)
+                .ThenInclude(d => d.Book)
+                .Where(t => t.ReaderId == readerId)
+                .OrderBy(t => t.BorrowDate)
                 .ToListAsync();
 
-            return Ok(pending);
+            return Ok(result);
         }
-    }
+        // sách quá hạn 
+        [HttpGet("overdue")]
+        public async Task<IActionResult> GetOverdueBooks()
+        {
+            var today = DateTime.Now.Date;
 
-    public class CreateBorrowRequest
-    {
-        public int ReaderId { get; set; }
-        public List<BorrowBookItem> Books { get; set; } = new();
-        public int DueDays { get; set; } = 14;
-        public string? Note { get; set; }
-    }
+            var data = await _context.BorrowTickets
+                .Include(t => t.Reader)
+                .Include(t => t.BorrowDetails)
+                .ThenInclude(d => d.Book)
+                .Where(t => t.Status == "Borrowing")
+                .ToListAsync();
 
-    public class BorrowBookItem
-    {
-        public int BookId { get; set; }
-        public int Quantity { get; set; } = 1;
+            var overdueBooks = data
+                .Where(t => t.DueDate.Date < today)
+                .OrderBy(t => t.DueDate)
+                .Select(t => new
+                {
+                    t.BorrowTicketId,
+                    ReaderName = t.Reader != null ? t.Reader.FullName : "",
+                    t.BorrowDate,
+                    t.DueDate,
+                    OverdueDays = (today - t.DueDate.Date).Days,
+                    FineAmount = (today - t.DueDate.Date).Days * 5000,
+                    Details = t.BorrowDetails.Select(d => new
+                    {
+                        d.BookId,
+                        BookTitle = d.Book != null ? d.Book.Title : "",
+                        d.Quantity
+                    }).ToList()
+                })
+                .ToList();
+
+            return Ok(overdueBooks);
+        }
     }
 }

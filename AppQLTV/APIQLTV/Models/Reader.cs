@@ -1,26 +1,23 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace APIQLTV.Models
+﻿namespace APIQLTV.Models
 {
     public class Reader
     {
         public int ReaderId { get; set; }
 
-        [Required]
         public string FullName { get; set; } = string.Empty;
 
-        public string Email { get; set; } = string.Empty;
+        public string? Email { get; set; }
 
-        public string Phone { get; set; } = string.Empty;
+        public string? Phone { get; set; }
 
         public string? Address { get; set; }
 
-        public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime? DateOfBirth { get; set; }
 
-        public string Status { get; set; } = "Active";
+        public string? Gender { get; set; }
 
-        public ICollection<BorrowTicket>? BorrowTickets { get; set; }
-        public DateTime? DateOfBirth { get; internal set; }
-        public string? Gender { get; internal set; }
+        public DateTime CreatedDate { get; set; }
+
+        public string? Status { get; set; }
     }
 }

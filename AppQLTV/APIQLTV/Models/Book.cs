@@ -1,7 +1,12 @@
-﻿namespace APIQLTV.Models
+﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace APIQLTV.Models
 {
+    [Table("books")]
     public class Book
     {
+
         public int Id { get; set; }
 
         public string Title { get; set; } = string.Empty;
@@ -18,5 +23,6 @@
 
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; } = DateTime.Now;
+
     }
 }

@@ -1,182 +1,247 @@
-﻿@page "/borrow-books"
+﻿@page "/borrow-book"
+@using System.Net.Http.Json
 @using AppQLTV.Models.Library
 @inject HttpClient Http
-@inject NavigationManager Navigation
 
-<PageTitle>Lập phiếu mượn</PageTitle>
+<PageTitle>Gửi yêu cầu mượn sách</PageTitle>
 
-<div class="container mt-4">
-    <div class="card shadow border-0 rounded-4">
-        <div class="card-header bg-primary text-white">
-            <h3 class="mb-0">
-                <i class="bi bi-journal-arrow-up"></i>
-                Lập phiếu mượn sách
-            </h3>
-        </div>
+<div class="borrow-page">
+    <div class="borrow-header">
+        <h2>📚 Gửi yêu cầu mượn sách</h2>
+        <p>Chọn độc giả và sách từ danh sách có sẵn</p>
+    </div>
 
-        <div class="card-body p-4">
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="alert alert-info">@message</div>
+    }
 
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label class="form-label fw-bold">Mã độc giả</label>
-                    <input class="form-control form-control-lg"
-                           type="number"
-                           @bind="borrow.ReaderId"
-                           placeholder="VD: 1" />
-                </div>
-
-                <div class="col-md-4 mb-3">
-                    <label class="form-label fw-bold">Mã sách</label>
-                    <input class="form-control form-control-lg"
-                           type="number"
-                           @bind="book.BookId"
-                           placeholder="VD: 1" />
-                </div>
-
-                <div class="col-md-4 mb-3">
-                    <label class="form-label fw-bold">Số lượng</label>
-                    <input class="form-control form-control-lg"
-                           type="number"
-                           @bind="book.Quantity" />
-                </div>
+    <div class="borrow-card">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label>Độc giả</label>
+                <select class="form-control" @bind="borrow.ReaderId">
+                    <option value="0">-- Chọn độc giả --</option>
+                    @foreach (var reader in readers)
+                    {
+                        <option value="@reader.ReaderId">
+                            @reader.FullName - @reader.Phone
+                        </option>
+                    }
+                </select>
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Hạn trả</label>
-                <input class="form-control form-control-lg"
+            <div class="col-md-6 mb-3">
+                <label>Ngày hẹn trả</label>
+                <input class="form-control"
                        type="date"
+                       min="@DateTime.Now.ToString("yyyy-MM-dd")"
+                       max="@DateTime.Now.AddDays(14).ToString("yyyy-MM-dd")"
                        @bind="borrow.DueDate" />
             </div>
 
-            <div class="mb-3">
-                <label class="form-label fw-bold">Ghi chú</label>
-                <textarea class="form-control"
-                          rows="3"
-                          @bind="borrow.Note"
-                          placeholder="VD: Mượn sách lần đầu"></textarea>
+            <div class="col-md-8 mb-3">
+                <label>Sách</label>
+                <select class="form-control" @bind="bookItem.BookId">
+                    <option value="0">-- Chọn sách --</option>
+                    @foreach (var book in books)
+                    {
+                        <option value="@book.Id">
+                            @book.Title - còn @book.AvailableCopies cuốn
+                        </option>
+                    }
+                </select>
             </div>
 
-            <div class="d-flex gap-2">
-                <button class="btn btn-outline-primary"
-                        @onclick="AddBook">
-                    <i class="bi bi-plus-circle"></i>
-                    Thêm sách vào phiếu
-                </button>
+            <div class="col-md-4 mb-3">
+                <label>Số lượng</label>
+                <input class="form-control"
+                       type="number"
+                       min="1"
+                       max="5"
+                       @bind="bookItem.Quantity" />
+            </div>
 
-                <button class="btn btn-success"
-                        @onclick="CreateBorrowTicket">
-                    <i class="bi bi-check-circle"></i>
-                    Lập phiếu mượn
+            <div class="col-12 mb-3">
+                <button class="btn btn-secondary" @onclick="AddBook">
+                    + Thêm sách vào yêu cầu
                 </button>
             </div>
 
-            @if (borrow.Books.Count > 0)
-            {
-                <table class="table table-bordered mt-4">
-                    <thead class="table-light">
+            <div class="col-12 mb-3">
+                <label>Ghi chú</label>
+                <textarea class="form-control" rows="3" @bind="borrow.Note"></textarea>
+            </div>
+        </div>
+
+        @if (borrow.Books.Count > 0)
+        {
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Tên sách</th>
+                        <th>Số lượng</th>
+                        <th>Xóa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in borrow.Books)
+                    {
+                        var book = books.FirstOrDefault(x => x.Id == item.BookId);
+
                         <tr>
-                            <th>Mã sách</th>
-                            <th>Số lượng</th>
-                            <th>Thao tác</th>
+                            <td>@book?.Title</td>
+                            <td>@item.Quantity</td>
+                            <td>
+                                <button class="btn btn-danger btn-sm"
+                                        @onclick="() => RemoveBook(item)">
+                                    Xóa
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var item in borrow.Books)
-                        {
-                            <tr>
-                                <td>@item.BookId</td>
-                                <td>@item.Quantity</td>
-                                <td>
-                                    <button class="btn btn-sm btn-danger"
-                                            @onclick="() => RemoveBook(item)">
-                                        Xóa
-                                    </button>
-                                </td>
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
+                    }
+                </tbody>
+            </table>
+        }
 
-            @if (!string.IsNullOrEmpty(message))
-            {
-                <div class="alert @(success ? "alert-success" : "alert-danger") mt-4">
-                    @message
-                </div>
-            }
+        <div class="borrow-actions">
+            <button class="btn btn-primary" @onclick="SendBorrowRequest">
+                Gửi yêu cầu mượn sách
+            </button>
+
+            <button class="btn btn-outline-secondary" @onclick="ResetForm">
+                Làm mới
+            </button>
         </div>
     </div>
 </div>
 
 @code {
-    private BorrowRequestModel borrow = new()
+    private List<ReaderModel> readers = new();
+    private List<BookModel> books = new();
+
+    private BorrowRequest borrow = new()
     {
         DueDate = DateTime.Now.AddDays(7)
     };
 
-    private BorrowBookItemModel book = new()
+    private BorrowBookItem bookItem = new()
     {
         Quantity = 1
     };
 
     private string message = "";
-    private bool success;
+
+    protected override async Task OnInitializedAsync()
+    {
+        readers = await Http.GetFromJsonAsync<List<ReaderModel>>("api/readers") ?? new();
+        books = await Http.GetFromJsonAsync<List<BookModel>>("api/books") ?? new();
+    }
 
     private void AddBook()
     {
-        if (book.BookId <= 0 || book.Quantity <= 0)
+        if (borrow.ReaderId <= 0)
         {
-            success = false;
-            message = "Vui lòng nhập mã sách và số lượng hợp lệ.";
+            message = "Vui lòng chọn độc giả.";
             return;
         }
 
-        borrow.Books.Add(new BorrowBookItemModel
+        if (bookItem.BookId <= 0)
         {
-            BookId = book.BookId,
-            Quantity = book.Quantity
+            message = "Vui lòng chọn sách.";
+            return;
+        }
+
+        if (bookItem.Quantity <= 0)
+        {
+            message = "Số lượng phải lớn hơn 0.";
+            return;
+        }
+
+        var totalQuantity = borrow.Books.Sum(x => x.Quantity) + bookItem.Quantity;
+
+        if (totalQuantity > 5)
+        {
+            message = "Mỗi lần chỉ được mượn tối đa 5 quyển sách.";
+            return;
+        }
+
+        var book = books.FirstOrDefault(x => x.Id == bookItem.BookId);
+
+        if (book == null)
+        {
+            message = "Sách không tồn tại.";
+            return;
+        }
+
+        if (book.AvailableCopies < bookItem.Quantity)
+        {
+            message = $"Sách {book.Title} không đủ số lượng.";
+            return;
+        }
+
+        borrow.Books.Add(new BorrowBookItem
+        {
+            BookId = bookItem.BookId,
+            Quantity = bookItem.Quantity
         });
 
-        book = new BorrowBookItemModel { Quantity = 1 };
+        bookItem = new BorrowBookItem
+        {
+            Quantity = 1
+        };
+
         message = "";
     }
 
-    private void RemoveBook(BorrowBookItemModel item)
+    private void RemoveBook(BorrowBookItem item)
     {
         borrow.Books.Remove(item);
     }
 
-    private async Task CreateBorrowTicket()
+    private async Task SendBorrowRequest()
     {
         if (borrow.ReaderId <= 0)
         {
-            success = false;
-            message = "Vui lòng nhập mã độc giả.";
+            message = "Vui lòng chọn độc giả.";
             return;
         }
 
         if (borrow.Books.Count == 0)
         {
-            success = false;
             message = "Vui lòng thêm ít nhất một sách.";
             return;
         }
 
-        var response = await Http.PostAsJsonAsync("api/borrow", borrow);
-
-        success = response.IsSuccessStatusCode;
-
-        if (success)
+        if (borrow.DueDate.Date > DateTime.Now.Date.AddDays(14))
         {
-            message = "Lập phiếu mượn thành công.";
-            borrow = new BorrowRequestModel
-            {
-                DueDate = DateTime.Now.AddDays(7)
-            };
+            message = "Số ngày mượn tối đa là 14 ngày.";
+            return;
+        }
+
+        var response = await Http.PostAsJsonAsync("api/Borrow/request", borrow);
+
+        if (response.IsSuccessStatusCode)
+        {
+            message = "Gửi yêu cầu mượn sách thành công. Vui lòng chờ duyệt.";
+            ResetForm();
         }
         else
         {
-            message = "Lập phiếu mượn thất bại. Kiểm tra mã độc giả hoặc mã sách.";
+            message = await response.Content.ReadAsStringAsync();
         }
+    }
+
+    private void ResetForm()
+    {
+        borrow = new BorrowRequest
+        {
+            DueDate = DateTime.Now.AddDays(7)
+        };
+
+        bookItem = new BorrowBookItem
+        {
+            Quantity = 1
+        };
     }
 }

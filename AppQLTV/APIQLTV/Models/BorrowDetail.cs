@@ -8,9 +8,10 @@
         public BorrowTicket? BorrowTicket { get; set; }
 
         public int BookId { get; set; }
+        public Book? Book { get; set; }
 
-        public int Quantity { get; set; } = 1;
+        public int Quantity { get; set; }
 
-        public string Status { get; set; } = "Borrowing";
+        public string? Status { get; set; }
     }
 }

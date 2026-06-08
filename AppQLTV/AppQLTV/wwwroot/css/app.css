@@ -1,3 +1,4 @@
+@import url('app.css');
 html, body {
     font-family: "Segoe UI", Arial, sans-serif;
 
@@ -128,6 +129,599 @@ html, body {
     .btn-lg {
         border-radius: 12px;
         font-weight: 600;
+    }
+
+    // readerPage 
+        .reader-page {
+        padding: 24px;
+        background: #f4f7fb;
+        min-height: 100vh;
+    }
+
+    .reader-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+    }
+
+        .reader-header h2 {
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .reader-header p {
+            color: #6c757d;
+            margin: 0;
+        }
+
+    .reader-stat-card {
+        background: white;
+        padding: 20px;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+        .reader-stat-card p {
+            color: #6c757d;
+            margin-bottom: 8px;
+        }
+
+        .reader-stat-card h3 {
+            font-weight: 700;
+            margin: 0;
+        }
+
+    .reader-toolbar {
+        display: flex;
+        gap: 10px;
+        background: white;
+        padding: 16px;
+        border-radius: 16px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+        .reader-toolbar input {
+            max-width: 500px;
+        }
+
+    .reader-table-wrapper {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .reader-table {
+        margin-bottom: 0;
+    }
+
+        .reader-table thead th {
+            background: #0d6efd;
+            color: white;
+            padding: 14px;
+            white-space: nowrap;
+        }
+
+        .reader-table tbody td {
+            padding: 14px;
+            vertical-align: middle;
+        }
+
+        .reader-table tbody tr:hover {
+            background: #f1f6ff;
+        }
+
+    .badge {
+        padding: 8px 10px;
+        border-radius: 20px;
+    }
+
+//create-reader
+.reader-create-page {
+    min-height: 100vh;
+    padding: 32px;
+    background: linear-gradient(135deg, #eef4ff 0%, #f8fbff 100%);
+}
+
+.reader-create-header {
+    max-width: 1050px;
+    margin: 0 auto 24px auto;
+    padding: 24px 28px;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #0d6efd, #4dabf7);
+    color: white;
+    box-shadow: 0 12px 30px rgba(13, 110, 253, 0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .reader-create-header h2 {
+        margin: 0;
+        font-weight: 800;
+    }
+
+    .reader-create-header p {
+        margin: 6px 0 0 0;
+        opacity: 0.9;
+    }
+
+.reader-create-card {
+    max-width: 1050px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 22px;
+    padding: 32px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.08);
+}
+
+.form-section-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #0d6efd;
+    margin-bottom: 24px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.reader-create-card .form-label {
+    font-weight: 600;
+    color: #344054;
+    margin-bottom: 8px;
+}
+
+.custom-input {
+    border-radius: 12px;
+    border: 1px solid #d0d5dd;
+    padding: 11px 14px;
+    transition: all 0.2s ease;
+}
+
+    .custom-input:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 4px rgba(13, 110, 253, 0.12);
+    }
+
+.reader-create-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 22px;
+    border-top: 1px solid #e9ecef;
+}
+
+    .reader-create-actions .btn {
+        border-radius: 12px;
+        font-weight: 600;
+        padding-top: 10px;
+        padding-bottom: 10px;
+    }
+
+@media (max-width: 768px) {
+    .reader-create-page {
+        padding: 16px;
+    }
+
+    .reader-create-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .reader-create-card {
+        padding: 22px;
+    }
+
+    .reader-create-actions {
+        flex-direction: column;
+    }
+
+        .reader-create-actions .btn {
+            width: 100%;
+        }
+}
+
+// Duyệt trả sách
+.borrow-manage-page {
+    padding: 32px;
+    background: #f4f7fb;
+    min-height: 100vh;
+}
+
+.borrow-manage-header {
+    background: linear-gradient(135deg, #198754, #51cf66);
+    color: white;
+    padding: 26px 30px;
+    border-radius: 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 12px 30px rgba(25, 135, 84, 0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .borrow-manage-header h2 {
+        margin: 0;
+        font-weight: 800;
+    }
+
+    .borrow-manage-header p {
+        margin: 6px 0 0 0;
+        opacity: 0.9;
+    }
+
+.borrow-filter {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: white;
+    padding: 16px;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+.borrow-request-list {
+    display: grid;
+    gap: 18px;
+}
+
+.borrow-request-card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.07);
+}
+
+.borrow-request-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .borrow-request-top h5 {
+        font-weight: 800;
+        margin: 0;
+    }
+
+    .borrow-request-top p {
+        margin: 4px 0 0 0;
+        color: #6c757d;
+    }
+
+.status-badge {
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-borrowing {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.status-returned {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.borrow-info-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 20px 0;
+}
+
+    .borrow-info-grid div {
+        background: #f8f9fa;
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .borrow-info-grid span {
+        display: block;
+        color: #6c757d;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+.borrow-books {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 14px;
+}
+
+    .borrow-books ul {
+        margin: 8px 0 0 0;
+    }
+
+.borrow-note {
+    margin-top: 14px;
+    color: #495057;
+}
+
+.borrow-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 18px;
+    gap: 10px;
+}
+
+.empty-box {
+    background: white;
+    padding: 40px;
+    border-radius: 18px;
+    text-align: center;
+    color: #6c757d;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+// manage-brrows
+.manage-borrows-page {
+    min-height: 100vh;
+    padding: 32px;
+    background: #f4f7fb;
+}
+
+.manage-borrows-header {
+    background: linear-gradient(135deg, #198754, #51cf66);
+    color: white;
+    padding: 26px 30px;
+    border-radius: 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 12px 30px rgba(25, 135, 84, 0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .manage-borrows-header h2 {
+        margin: 0;
+        font-weight: 800;
+    }
+
+    .manage-borrows-header p {
+        margin: 6px 0 0;
+        opacity: 0.9;
+    }
+
+.borrow-status-filter {
+    background: white;
+    padding: 16px;
+    border-radius: 18px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.borrow-card-list {
+    display: grid;
+    gap: 18px;
+}
+
+.borrow-ticket-card {
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.07);
+}
+
+.ticket-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .ticket-top h5 {
+        margin: 0;
+        font-weight: 800;
+    }
+
+    .ticket-top span {
+        color: #6c757d;
+    }
+
+.ticket-status {
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 13px;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-borrowing {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.status-returned {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.status-other {
+    background: #e9ecef;
+    color: #495057;
+}
+
+.ticket-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 20px 0;
+}
+
+    .ticket-info div {
+        background: #f8f9fa;
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .ticket-info small {
+        display: block;
+        color: #6c757d;
+        margin-bottom: 4px;
+    }
+
+.ticket-books {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 14px;
+}
+
+    .ticket-books ul {
+        margin: 10px 0 0;
+        padding-left: 18px;
+    }
+
+    .ticket-books li {
+        margin-bottom: 6px;
+    }
+
+        .ticket-books li span {
+            margin-left: 10px;
+            color: #6c757d;
+        }
+
+.ticket-note {
+    margin-top: 14px;
+    color: #495057;
+}
+
+.ticket-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+}
+// quá hạn
+.overdue-page {
+    min-height: 100vh;
+    padding: 32px;
+    background: #f4f7fb;
+}
+
+.overdue-header {
+    background: linear-gradient(135deg, #dc3545, #ff8787);
+    color: white;
+    padding: 26px 30px;
+    border-radius: 22px;
+    margin-bottom: 24px;
+    box-shadow: 0 12px 30px rgba(220, 53, 69, 0.25);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .overdue-header h2 {
+        margin: 0;
+        font-weight: 800;
+    }
+
+    .overdue-header p {
+        margin: 6px 0 0;
+        opacity: 0.9;
+    }
+
+.overdue-stats {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 18px;
+}
+
+.overdue-stat-card {
+    background: white;
+    padding: 22px;
+    border-radius: 18px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+}
+
+    .overdue-stat-card span {
+        display: block;
+        color: #6c757d;
+        margin-bottom: 8px;
+    }
+
+    .overdue-stat-card strong {
+        font-size: 28px;
+        color: #dc3545;
+    }
+
+.overdue-list {
+    display: grid;
+    gap: 18px;
+}
+
+.overdue-card {
+    background: white;
+    padding: 24px;
+    border-radius: 20px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.07);
+}
+
+.overdue-card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+    .overdue-card-top h5 {
+        margin: 0;
+        font-weight: 800;
+    }
+
+    .overdue-card-top p {
+        margin: 4px 0 0;
+        color: #6c757d;
+    }
+
+.overdue-badge {
+    background: #f8d7da;
+    color: #842029;
+    padding: 8px 14px;
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.overdue-info {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 20px 0;
+}
+
+    .overdue-info div {
+        background: #f8f9fa;
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .overdue-info span {
+        display: block;
+        color: #6c757d;
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+.overdue-books-box {
+    background: #fff5f5;
+    padding: 16px;
+    border-radius: 14px;
+}
+
+    .overdue-books-box ul {
+        margin: 8px 0 0;
     }
     /* ========== CẢI TIẾN DANH SÁCH SÁCH DẠNG CARD ========== */
     /* Container chính */
