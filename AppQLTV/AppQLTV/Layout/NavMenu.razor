@@ -106,7 +106,9 @@
                 <i class="bi bi-moon"></i> <span>Dark Mode</span>
             </div>
             <label class="switch">
-                <input type="checkbox" />
+                <input type="checkbox" 
+                       checked="@isDarkMode"
+                       @onchange="ToggleDarkMode" />
                 <span></span>
             </label>
         </div>
@@ -119,22 +121,21 @@
 
     private bool isLoggedIn = false;
     private string? role = "";
+    private bool isDarkMode = false;
 
     private bool isAdmin => role == "Admin";
     private bool isLibrarianOrAdmin => role == "Librarian" || role == "Admin";
 
-    protected override async Task OnInitializedAsync()
-    {
-        await CheckLoginStatus();
-        await JS.InvokeVoidAsync("window.addEventListener", "storage", DotNetObjectReference.Create(this), nameof(OnStorageChanged));
-    }
 
-    [JSInvokable]
-    public async Task OnStorageChanged()
+   protected override async Task OnAfterRenderAsync(bool firstRender)
+{
+    if (firstRender)
     {
         await CheckLoginStatus();
-        await InvokeAsync(StateHasChanged);
+        await LoadDarkMode();
+        StateHasChanged();
     }
+}
 
     private async Task CheckLoginStatus()
     {
@@ -186,7 +187,47 @@
 
     private async Task Logout()
     {
+        bool confirmLogout = await JS.InvokeAsync<bool>(
+            "confirm",
+            "Bạn có chắc chắn muốn đăng xuất không?"
+        );
+
+        if (!confirmLogout)
+        {
+            return;
+        }
         await ClearAuthData();
         Navigation.NavigateTo("/", forceLoad: true);
+    }
+    private async Task LoadDarkMode()
+    {
+        var savedTheme = await JS.InvokeAsync<string?>("localStorage.getItem", "theme");
+
+        isDarkMode = savedTheme == "dark";
+
+        if (isDarkMode)
+        {
+            await JS.InvokeVoidAsync("document.body.classList.add", "dark-mode-active");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("document.body.classList.remove", "dark-mode-active");
+        }
+    }
+
+    private async Task ToggleDarkMode(ChangeEventArgs e)
+    {
+        isDarkMode = (bool)e.Value!;
+
+        if (isDarkMode)
+        {
+            await JS.InvokeVoidAsync("document.body.classList.add", "dark-mode-active");
+            await JS.InvokeVoidAsync("localStorage.setItem", "theme", "dark");
+        }
+        else
+        {
+            await JS.InvokeVoidAsync("document.body.classList.remove", "dark-mode-active");
+            await JS.InvokeVoidAsync("localStorage.setItem", "theme", "light");
+        }
     }
 }

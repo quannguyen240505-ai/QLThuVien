@@ -1,7 +1,6 @@
-@import url('app.css');
 html, body {
     font-family: "Segoe UI", Arial, sans-serif;
-
+}
     h1:focus {
         outline: none;
     }
@@ -990,4 +989,243 @@ html, body {
             padding: 1rem;
         }
     }
+    body.dark-mode-active {
+        background: #0f172a;
+        color: #e5e7eb;
+    }
+
+        body.dark-mode-active .main-wrapper,
+        body.dark-mode-active .content-area {
+            background: #0f172a;
+            color: #e5e7eb;
+        }
+
+        body.dark-mode-active .topbar {
+            background: #111827;
+            color: #f9fafb;
+            border-bottom: 1px solid #334155;
+        }
+
+        body.dark-mode-active .sidebar-card {
+            background: #111827;
+            color: #f9fafb;
+            border-right: 1px solid #334155;
+        }
+
+        body.dark-mode-active .menu-link {
+            color: #cbd5e1;
+        }
+
+            body.dark-mode-active .menu-link:hover {
+                background: #1e293b;
+                color: #ffffff;
+            }
+
+            body.dark-mode-active .menu-link.active {
+                background: #2563eb;
+                color: white;
+            }
+
+        body.dark-mode-active .search-box {
+            background: #1e293b;
+            border: 1px solid #334155;
+        }
+
+            body.dark-mode-active .search-box input {
+                background: transparent;
+                color: white;
+            }
+
+                body.dark-mode-active .search-box input::placeholder {
+                    color: #94a3b8;
+                }
+
+        body.dark-mode-active .brand-name {
+            color: #f9fafb;
+        }
+
+        body.dark-mode-active .brand-subtitle,
+        body.dark-mode-active .menu-title {
+            color: #94a3b8;
+        }
+/* ===== GLOBAL DARK MODE ===== */
+
+body.dark-mode-active {
+    background: #020617 !important;
+    color: #e5e7eb !important;
 }
+
+    body.dark-mode-active input,
+    body.dark-mode-active textarea,
+    body.dark-mode-active select {
+        background: #111827 !important;
+        color: #f8fafc !important;
+        border-color: #334155 !important;
+    }
+
+        body.dark-mode-active input::placeholder {
+            color: #94a3b8 !important;
+        }
+
+    body.dark-mode-active h1,
+    body.dark-mode-active h2,
+    body.dark-mode-active h3,
+    body.dark-mode-active h4,
+    body.dark-mode-active h5,
+    body.dark-mode-active h6 {
+        color: #f8fafc !important;
+    }
+
+    body.dark-mode-active p,
+    body.dark-mode-active span,
+    body.dark-mode-active small {
+        color: inherit;
+    }
+    /* ===== HOME PAGE DARK MODE ===== */
+
+    body.dark-mode-active .university-library-home {
+        color: #e5e7eb !important;
+    }
+
+    /* Hero bên trái */
+    body.dark-mode-active .hero-left {
+        background: linear-gradient(135deg, #0f172a 0%, #111827 100%) !important;
+        color: #e5e7eb !important;
+        box-shadow: 0 18px 38px rgba(0, 0, 0, 0.45) !important;
+        border: 1px solid #1e293b !important;
+    }
+
+        body.dark-mode-active .hero-left h1 {
+            color: #f8fafc !important;
+        }
+
+        body.dark-mode-active .hero-left p {
+            color: #94a3b8 !important;
+        }
+
+    body.dark-mode-active .hero-label {
+        background: #1e293b !important;
+        color: #7dd3fc !important;
+    }
+
+    /* Ô tìm kiếm trong Home */
+    body.dark-mode-active .search-area {
+        background: #020617 !important;
+        border: 1px solid #334155 !important;
+    }
+
+        body.dark-mode-active .search-area i {
+            color: #94a3b8 !important;
+        }
+
+        body.dark-mode-active .search-area input {
+            color: #f8fafc !important;
+        }
+
+            body.dark-mode-active .search-area input::placeholder {
+                color: #64748b !important;
+            }
+
+    /* Nút */
+    body.dark-mode-active .btn-primary-home {
+        background: #2563eb !important;
+        color: white !important;
+    }
+
+    body.dark-mode-active .btn-secondary-home {
+        background: #1e293b !important;
+        color: #7dd3fc !important;
+    }
+
+    /* Hero bên phải */
+    body.dark-mode-active .hero-right {
+        background: linear-gradient(135deg, #1e3a8a, #1d4ed8) !important;
+        box-shadow: 0 18px 38px rgba(0, 0, 0, 0.4) !important;
+    }
+
+    /* Các ô thống kê */
+    body.dark-mode-active .stat-box {
+        background: #0f172a !important;
+        border: 1px solid #1e293b !important;
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4) !important;
+    }
+
+        body.dark-mode-active .stat-box i {
+            background: #1e293b !important;
+            color: #38bdf8 !important;
+        }
+
+        body.dark-mode-active .stat-box h3 {
+            color: #f8fafc !important;
+        }
+
+        body.dark-mode-active .stat-box p {
+            color: #94a3b8 !important;
+        }
+
+    /* Các panel lớn */
+    body.dark-mode-active .service-panel,
+    body.dark-mode-active .notice-panel,
+    body.dark-mode-active .about-library {
+        background: #0f172a !important;
+        border: 1px solid #1e293b !important;
+        box-shadow: 0 14px 30px rgba(0, 0, 0, 0.4) !important;
+    }
+
+        /* Tiêu đề section */
+        body.dark-mode-active .section-title h2,
+        body.dark-mode-active .about-library h2 {
+            color: #f8fafc !important;
+        }
+
+        body.dark-mode-active .section-title p,
+        body.dark-mode-active .about-library p {
+            color: #94a3b8 !important;
+        }
+
+    /* Card dịch vụ */
+    body.dark-mode-active .service-card {
+        background: #111827 !important;
+        border: 1px solid #1e293b !important;
+    }
+
+        body.dark-mode-active .service-card:hover {
+            background: #1e293b !important;
+        }
+
+        body.dark-mode-active .service-card i {
+            background: #1e293b !important;
+            color: #60a5fa !important;
+        }
+
+        body.dark-mode-active .service-card h3 {
+            color: #f8fafc !important;
+        }
+
+        body.dark-mode-active .service-card p {
+            color: #94a3b8 !important;
+        }
+
+    /* Thông báo */
+    body.dark-mode-active .notice-item {
+        border-bottom: 1px solid #334155 !important;
+    }
+
+    body.dark-mode-active .notice-date {
+        background: #1e293b !important;
+        color: #7dd3fc !important;
+    }
+
+    body.dark-mode-active .notice-item h4 {
+        color: #f8fafc !important;
+    }
+
+    body.dark-mode-active .notice-item p {
+        color: #94a3b8 !important;
+    }
+
+    /* Nút trong about */
+    body.dark-mode-active .about-actions a {
+        background: #2563eb !important;
+        color: white !important;
+    }
