@@ -2,6 +2,7 @@
 using APIQLTV.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace APIQLTV.Controllers
 {
@@ -20,27 +21,31 @@ namespace APIQLTV.Controllers
         [HttpPost("request")]
         public async Task<IActionResult> SendBorrowRequest(BorrowRequest request)
         {
+            var gmail = User.FindFirst(ClaimTypes.Email)?.Value;
+
+            if (string.IsNullOrWhiteSpace(gmail))
+                return Unauthorized("Không tìm thấy thông tin người dùng đăng nhập.");
+
+            var reader = await _context.Readers
+                .FirstOrDefaultAsync(r => r.Email == gmail);
+
+            if (reader == null)
+                return NotFound("Tài khoản này chưa có thông tin độc giả.");
+
+            if (request.Books == null || request.Books.Count == 0)
+                return BadRequest("Chưa chọn sách để mượn.");
+
             var totalQuantity = request.Books.Sum(x => x.Quantity);
 
             if (totalQuantity > 5)
                 return BadRequest("Mỗi lần chỉ được mượn tối đa 5 quyển sách.");
 
-            var maxDueDate = DateTime.Now.Date.AddDays(14);
-
-            if (request.DueDate.Date > maxDueDate)
+            if (request.DueDate.Date > DateTime.Now.Date.AddDays(14))
                 return BadRequest("Số ngày mượn tối đa là 14 ngày.");
-
-            var reader = await _context.Readers.FindAsync(request.ReaderId);
-
-            if (reader == null)
-                return NotFound("Không tìm thấy độc giả.");
-
-            if (request.Books == null || request.Books.Count == 0)
-                return BadRequest("Chưa chọn sách để mượn.");
 
             var ticket = new BorrowTicket
             {
-                ReaderId = request.ReaderId,
+                ReaderId = reader.ReaderId,
                 BorrowDate = DateTime.Now,
                 DueDate = request.DueDate,
                 Note = request.Note,
@@ -76,7 +81,8 @@ namespace APIQLTV.Controllers
             return Ok(new
             {
                 message = "Gửi yêu cầu mượn sách thành công.",
-                borrowTicketId = ticket.BorrowTicketId
+                borrowTicketId = ticket.BorrowTicketId,
+                readerName = reader.FullName
             });
         }
 
@@ -251,6 +257,107 @@ namespace APIQLTV.Controllers
                 .ToList();
 
             return Ok(overdueBooks);
+        }
+
+        //Trả sách theo độc giả (dành cho member)
+        [HttpGet("my-borrowing")]
+        public async Task<IActionResult> GetMyBorrowingBooks()
+        {
+            var gmail = User.FindFirst(ClaimTypes.Email)?.Value;
+
+            if (string.IsNullOrWhiteSpace(gmail))
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+
+            var reader = await _context.Readers
+                .FirstOrDefaultAsync(r => r.Email == gmail);
+
+            if (reader == null)
+                return NotFound("Không tìm thấy độc giả tương ứng với tài khoản.");
+
+            var result = await _context.BorrowTickets
+                .Include(t => t.BorrowDetails)
+                .ThenInclude(d => d.Book)
+                .Where(t => t.ReaderId == reader.ReaderId && t.Status == "Borrowing")
+                .OrderByDescending(t => t.BorrowDate)
+                .Select(t => new
+                {
+                    t.BorrowTicketId,
+                    t.BorrowDate,
+                    t.DueDate,
+                    t.Status,
+                    Details = t.BorrowDetails.Select(d => new
+                    {
+                        d.BorrowDetailId,
+                        d.BookId,
+                        BookTitle = d.Book != null ? d.Book.Title : "",
+                        d.Quantity,
+                        d.Status
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(result);
+        }
+
+        [HttpPut("{id}/member-return")]
+        public async Task<IActionResult> MemberReturnBook(int id)
+        {
+            var gmail = User.FindFirst(ClaimTypes.Email)?.Value;
+
+            if (string.IsNullOrWhiteSpace(gmail))
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+
+            var reader = await _context.Readers
+                .FirstOrDefaultAsync(r => r.Email == gmail);
+
+            if (reader == null)
+                return NotFound("Không tìm thấy độc giả tương ứng với tài khoản.");
+
+            var ticket = await _context.BorrowTickets
+                .Include(t => t.BorrowDetails)
+                .FirstOrDefaultAsync(t =>
+                    t.BorrowTicketId == id &&
+                    t.ReaderId == reader.ReaderId);
+
+            if (ticket == null)
+                return NotFound("Bạn không có quyền trả phiếu mượn này.");
+
+            if (ticket.Status != "Borrowing")
+                return BadRequest("Phiếu này không ở trạng thái đang mượn.");
+
+            var today = DateTime.Now.Date;
+            var overdueDays = 0;
+            var fineAmount = 0;
+
+            if (ticket.DueDate.Date < today)
+            {
+                overdueDays = (today - ticket.DueDate.Date).Days;
+                fineAmount = overdueDays * 5000;
+            }
+
+            foreach (var detail in ticket.BorrowDetails)
+            {
+                var book = await _context.Books.FindAsync(detail.BookId);
+
+                if (book != null)
+                    book.AvailableCopies += detail.Quantity;
+
+                detail.Status = "Returned";
+            }
+
+            ticket.Status = "Returned";
+            ticket.ReturnDate = DateTime.Now;
+            ticket.OverdueDays = overdueDays;
+            ticket.FineAmount = fineAmount;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new
+            {
+                message = "Trả sách thành công.",
+                overdueDays,
+                fineAmount
+            });
         }
     }
 }

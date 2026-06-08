@@ -1,95 +1,151 @@
 ﻿@page "/return-books"
+@using System.Net.Http.Json
+@using System.Net.Http.Headers
 @inject HttpClient Http
+@inject IJSRuntime JS
 
-<PageTitle>Trả sách</PageTitle>
+<h3>📥 Trả sách</h3>
 
-<div class="container mt-4">
+@if (!string.IsNullOrWhiteSpace(message))
+{
+    <div class="alert alert-info">@message</div>
+}
 
-    ```
-    <div class="card shadow border-0 rounded-4">
-
-        <div class="card-header bg-warning text-dark">
-            <h3 class="mb-0">
-                <i class="bi bi-arrow-return-left"></i>
-                Trả sách
-            </h3>
-        </div>
-
-        <div class="card-body p-4">
-
-            <div class="row">
-
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">
-                        Mã phiếu mượn
-                    </label>
-
-                    <input class="form-control form-control-lg"
-                           type="number"
-                           placeholder="Nhập mã phiếu mượn..."
-                           @bind="borrowTicketId" />
-                </div>
-
-                <div class="col-md-6 mb-3">
-                    <label class="form-label fw-bold">
-                        Mã sách
-                    </label>
-
-                    <input class="form-control form-control-lg"
-                           type="number"
-                           placeholder="Nhập mã sách..."
-                           @bind="bookId" />
-                </div>
-
-            </div>
-
-            <div class="d-grid mt-3">
-                <button class="btn btn-warning btn-lg"
-                        @onclick="HandleReturnBook">
-                    <i class="bi bi-check-circle"></i>
-                    Xác nhận trả sách
-                </button>
-            </div>
-
-            @if (!string.IsNullOrEmpty(message))
-            {
-                <div class="alert @(success ? "alert-success" : "alert-danger") mt-4">
-
-                    <i class="bi @(success ? "bi-check-circle-fill" : "bi-exclamation-triangle-fill")"></i>
-
-                    @message
-                </div>
-            }
-
-        </div>
-
+@if (isLoading)
+{
+    <p>Đang tải...</p>
+}
+else if (borrowings.Count == 0)
+{
+    <div class="alert alert-success">
+        Bạn hiện không có sách nào đang mượn.
     </div>
-    ```
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Mã phiếu</th>
+                <th>Sách đang mượn</th>
+                <th>Ngày mượn</th>
+                <th>Hạn trả</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
 
-</div>
+        <tbody>
+            @foreach (var item in borrowings)
+            {
+                <tr>
+                    <td>#@item.BorrowTicketId</td>
+
+                    <td>
+                        @foreach (var detail in item.Details)
+                        {
+                            <div>@detail.BookTitle - SL: @detail.Quantity</div>
+                        }
+                    </td>
+
+                    <td>@item.BorrowDate.ToString("dd/MM/yyyy")</td>
+                    <td>@item.DueDate.ToString("dd/MM/yyyy")</td>
+
+                    <td>
+                        <button class="btn btn-warning"
+                                @onclick="() => ReturnBook(item.BorrowTicketId)">
+                            Xác nhận trả sách
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
 
 @code {
-
-private int borrowTicketId;
-
-    private int bookId;
-
+    private List<MyBorrowingModel> borrowings = new();
+    private bool isLoading = true;
     private string message = "";
 
-    private bool success;
-
-    private async Task HandleReturnBook()
+    protected override async Task OnInitializedAsync()
     {
-        var response = await Http.PostAsync(
-            $"api/borrow/return?borrowTicketId={borrowTicketId}&bookId={bookId}",
-            null);
-
-        success = response.IsSuccessStatusCode;
-
-        message = success
-            ? "Trả sách thành công."
-            : "Không thể trả sách. Vui lòng kiểm tra lại thông tin.";
+        await LoadMyBorrowingBooks();
     }
 
+    private async Task SetToken()
+    {
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
 
+        if (!string.IsNullOrWhiteSpace(token))
+        {
+            Http.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", token);
+        }
+    }
+
+    private async Task LoadMyBorrowingBooks()
+    {
+        isLoading = true;
+        message = "";
+
+        await SetToken();
+
+        borrowings =
+            await Http.GetFromJsonAsync<List<MyBorrowingModel>>("api/Borrow/my-borrowing")
+            ?? new();
+
+        isLoading = false;
+    }
+
+    private async Task ReturnBook(int ticketId)
+    {
+        await SetToken();
+
+        var response = await Http.PutAsync($"api/Borrow/{ticketId}/member-return", null);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<ReturnResult>();
+
+            if (result != null)
+            {
+                message = $"✅ Trả sách thành công. Quá hạn: {result.OverdueDays} ngày. Phí phạt: {result.FineAmount:N0} VNĐ.";
+            }
+            else
+            {
+                message = "✅ Trả sách thành công.";
+            }
+
+            await LoadMyBorrowingBooks();
+        }
+        else
+        {
+            message = await response.Content.ReadAsStringAsync();
+        }
+    }
+
+    public class MyBorrowingModel
+    {
+        public int BorrowTicketId { get; set; }
+        public DateTime BorrowDate { get; set; }
+        public DateTime DueDate { get; set; }
+        public string Status { get; set; } = "";
+        public List<MyBorrowingDetailModel> Details { get; set; } = new();
+    }
+
+    public class MyBorrowingDetailModel
+    {
+        public int BorrowDetailId { get; set; }
+        public int BookId { get; set; }
+        public string BookTitle { get; set; } = "";
+        public int Quantity { get; set; }
+        public string Status { get; set; } = "";
+    }
+
+    public class ReturnResult
+    {
+        public string Message { get; set; } = "";
+        public int OverdueDays { get; set; }
+        public int FineAmount { get; set; }
+    }
 }
