@@ -184,15 +184,6 @@
 
     private async Task Logout()
     {
-        bool confirmLogout = await JS.InvokeAsync<bool>(
-            "confirm",
-            "Bạn có chắc chắn muốn đăng xuất không?"
-        );
-
-        if (!confirmLogout)
-        {
-            return;
-        }
         await ClearAuthData();
         Navigation.NavigateTo("/", forceLoad: true);
     }
