@@ -7,7 +7,8 @@
         public DateTime BorrowDate { get; set; }
         public DateTime DueDate { get; set; }
         public int OverdueDays { get; set; }
-        public int FineAmount { get; set; }
+        public decimal FineAmount { get; set; }
+        public decimal FinePerDay { get; set; }
         public List<OverdueBookDetailModel> Details { get; set; } = new();
     }
 
