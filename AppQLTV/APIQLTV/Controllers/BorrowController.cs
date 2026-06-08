@@ -20,64 +20,81 @@ namespace APIQLTV.Controllers
         [HttpPost("request")]
         public async Task<IActionResult> SendBorrowRequest(BorrowRequest request)
         {
-            var totalQuantity = request.Books.Sum(x => x.Quantity);
-
-            if (totalQuantity > 5)
-                return BadRequest("Mỗi lần chỉ được mượn tối đa 5 quyển sách.");
-
-            var maxDueDate = DateTime.Now.Date.AddDays(14);
-
-            if (request.DueDate.Date > maxDueDate)
-                return BadRequest("Số ngày mượn tối đa là 14 ngày.");
-
-            var reader = await _context.Readers.FindAsync(request.ReaderId);
-
-            if (reader == null)
-                return NotFound("Không tìm thấy độc giả.");
-
-            if (request.Books == null || request.Books.Count == 0)
-                return BadRequest("Chưa chọn sách để mượn.");
-
-            var ticket = new BorrowTicket
+            try
             {
-                ReaderId = request.ReaderId,
-                BorrowDate = DateTime.Now,
-                DueDate = request.DueDate,
-                Note = request.Note,
-                Status = "Pending"
-            };
+                // Validation tổng số lượng
+                var totalQuantity = request.Books.Sum(x => x.Quantity);
+                if (totalQuantity > 5)
+                    return BadRequest("Mỗi lần chỉ được mượn tối đa 5 quyển sách.");
 
-            _context.BorrowTickets.Add(ticket);
-            await _context.SaveChangesAsync();
+                // Xử lý DueDate an toàn
+                var dueDate = request.DueDate?.Date ?? DateTime.Now.AddDays(7).Date;
+                var maxDueDate = DateTime.Now.Date.AddDays(14);
+                if (dueDate > maxDueDate)
+                    return BadRequest("Số ngày mượn tối đa là 14 ngày.");
 
-            foreach (var item in request.Books)
-            {
-                var book = await _context.Books.FindAsync(item.BookId);
+                // Kiểm tra độc giả
+                var reader = await _context.Readers.FindAsync(request.ReaderId);
+                if (reader == null)
+                    return NotFound("Không tìm thấy độc giả.");
 
-                if (book == null)
-                    return BadRequest($"Không tìm thấy sách ID = {item.BookId}");
+                if (request.Books == null || request.Books.Count == 0)
+                    return BadRequest("Chưa chọn sách để mượn.");
 
-                if (book.AvailableCopies < item.Quantity)
-                    return BadRequest($"Sách {book.Title} không đủ số lượng.");
-
-                var detail = new BorrowDetail
+                // Kiểm tra trước tất cả sách
+                foreach (var item in request.Books)
                 {
-                    BorrowTicketId = ticket.BorrowTicketId,
-                    BookId = item.BookId,
-                    Quantity = item.Quantity,
+                    var book = await _context.Books.FindAsync(item.BookId);
+                    if (book == null)
+                        return BadRequest($"Không tìm thấy sách ID = {item.BookId}");
+                    if (book.AvailableCopies < item.Quantity)
+                        return BadRequest($"Sách {book.Title} không đủ số lượng.");
+                }
+
+                // Tạo phiếu mượn
+                var ticket = new BorrowTicket
+                {
+                    ReaderId = request.ReaderId,
+                    BorrowDate = DateTime.Now,
+                    DueDate = dueDate,
+                    Note = request.Note,
                     Status = "Pending"
                 };
 
-                _context.BorrowDetails.Add(detail);
+                _context.BorrowTickets.Add(ticket);
+                await _context.SaveChangesAsync();  // Lưu để lấy BorrowTicketId
+
+                // Tạo chi tiết mượn
+                foreach (var item in request.Books)
+                {
+                    var detail = new BorrowDetail
+                    {
+                        BorrowTicketId = ticket.BorrowTicketId,
+                        BookId = item.BookId,
+                        Quantity = item.Quantity,
+                        Status = "Pending"
+                    };
+                    _context.BorrowDetails.Add(detail);
+                }
+
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Gửi yêu cầu mượn sách thành công.",
+                    borrowTicketId = ticket.BorrowTicketId
+                });
             }
-
-            await _context.SaveChangesAsync();
-
-            return Ok(new
+            catch (DbUpdateException ex)
             {
-                message = "Gửi yêu cầu mượn sách thành công.",
-                borrowTicketId = ticket.BorrowTicketId
-            });
+                // Lấy inner exception chi tiết
+                var inner = ex.InnerException?.Message ?? ex.Message;
+                return BadRequest($"Lỗi database: {inner}");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Lỗi: {ex.Message}");
+            }
         }
 
         // Duyệt yêu cầu mượn sách - Pending -> Borrowing
