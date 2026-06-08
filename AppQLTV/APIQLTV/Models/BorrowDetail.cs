@@ -11,15 +11,6 @@ public class BorrowDetail
 
     public int BorrowTicketId { get; set; }
 
-<<<<<<< Updated upstream
-        public int BookId { get; set; }
-        public Book? Book { get; set; }
-
-        public int Quantity { get; set; }
-
-        public string? Status { get; set; }
-    }
-=======
     public int BookId { get; set; }
 
     public int Quantity { get; set; } = 1;
@@ -31,5 +22,4 @@ public class BorrowDetail
 
     [ForeignKey("BookId")]
     public Book? Book { get; set; }
->>>>>>> Stashed changes
 }

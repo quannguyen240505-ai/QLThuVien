@@ -1,4 +1,6 @@
-﻿namespace AppQLTV.Models
+﻿using System;
+
+namespace AppQLTV.Models
 {
     public class Book
     {
@@ -12,6 +14,8 @@
         public string? Description { get; set; }
         public int TotalCopies { get; set; }
         public int AvailableCopies { get; set; }
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public string? CoverImageUrl { get; set; }
     }
 }

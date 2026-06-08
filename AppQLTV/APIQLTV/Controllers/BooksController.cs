@@ -50,7 +50,7 @@ namespace APIQLTV.Controllers
         {
             book.AvailableCopies = book.TotalCopies;
             _context.Books.Add(book);
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
             return CreatedAtAction(nameof(GetBook), new { id = book.Id }, book);
         }
@@ -85,10 +85,10 @@ namespace APIQLTV.Controllers
             var book = await _context.Books.FindAsync(id);
             if (book == null) return NotFound();
 
-            book.IsActive = false; // Soft delete
+            _context.Books.Remove(book);
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(new { message = "Xóa sách thành công." });
         }
 
         private bool BookExists(int id)

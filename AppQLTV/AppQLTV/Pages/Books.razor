@@ -2,6 +2,7 @@
 @using AppQLTV.Models
 @inject HttpClient Http
 @inject NavigationManager Navigation
+@inject IJSRuntime JS
 
 <PageTitle>Danh sách sách - Thư viện</PageTitle>
 
@@ -39,10 +40,10 @@
                     </div>
                     <div class="book-card-body">
                         <div class="book-title">@book.Title</div>
-                        <div class="book-author"><i class="bi bi-pencil"></i> @book.Author</div>
+                        <div class="book-author">✍️ @book.Author</div>
                         <div class="book-meta">
                             <span class="book-category">@(string.IsNullOrEmpty(book.Category) ? "Chưa phân loại" : book.Category)</span>
-                            <span class="book-year">@(book.PublishYear > 0 ? book.PublishYear.ToString() : "Không rõ")</span>
+                            <span class="book-year">@(book.PublishYear > 0 ? book.PublishYear.ToString() : "?")</span>
                         </div>
                         @if (!string.IsNullOrEmpty(book.Description))
                         {
@@ -52,11 +53,14 @@
                         }
                         <div class="book-stats">
                             <span class="book-available @(book.AvailableCopies > 0 ? "available" : "unavailable")">
-                                @(book.AvailableCopies > 0 ? "✅ Sẵn sàng" : "❌ Hết")
+                                @(book.AvailableCopies > 0 ? "✅ Còn sách" : "❌ Hết sách")
                             </span>
                             <span class="book-total">Còn @book.AvailableCopies / @book.TotalCopies</span>
                         </div>
-                        <button class="btn-detail" @onclick="() => ViewDetail(book.Id)">Xem chi tiết</button>
+                        <div class="card-actions">
+                            <button class="btn-detail" @onclick="() => ViewDetail(book.Id)">Xem chi tiết</button>
+                            <button class="btn-borrow" @onclick="() => BorrowBook(book.Id)">📖 Mượn sách</button>
+                        </div>
                     </div>
                 </div>
             }
@@ -83,5 +87,35 @@
     private void ViewDetail(int bookId)
     {
         Navigation.NavigateTo($"/book-detail/{bookId}");
+    }
+
+    private async Task BorrowBook(int bookId)
+    {
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+        if (string.IsNullOrEmpty(token))
+        {
+            await JS.InvokeVoidAsync("localStorage.setItem", "returnUrl", Navigation.Uri);
+            await JS.InvokeVoidAsync("alert", "Vui lòng đăng nhập để mượn sách.");
+            Navigation.NavigateTo("/login", true);
+            return;
+        }
+        Navigation.NavigateTo($"/borrow-book?bookId={bookId}");
+    }
+
+    public class Book
+    {
+        public int Id { get; set; }
+        public string Title { get; set; } = string.Empty;
+        public string Author { get; set; } = string.Empty;
+        public string? ISBN { get; set; }
+        public string? Publisher { get; set; }
+        public int PublishYear { get; set; }
+        public string? Category { get; set; }
+        public string? Description { get; set; }
+        public int TotalCopies { get; set; }
+        public int AvailableCopies { get; set; }
+        public string? CoverImageUrl { get; set; }
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
     }
 }
