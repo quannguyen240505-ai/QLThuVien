@@ -1,0 +1,163 @@
+﻿@page "/readers/create"
+@page "/readers/create/{ReaderId:int}"
+@using System.Net.Http.Json
+@using AppQLTV.Models.Library
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>@(IsEdit ? "Cập nhật độc giả" : "Thêm độc giả")</PageTitle>
+
+<div class="reader-create-page">
+
+    <div class="reader-create-header">
+        <div>
+            <h2>@(IsEdit ? "✏️ Cập nhật độc giả" : "➕ Thêm độc giả")</h2>
+            <p>@(IsEdit ? "Chỉnh sửa thông tin độc giả trong hệ thống" : "Tạo mới thông tin độc giả cho thư viện")</p>
+        </div>
+
+        <button class="btn btn-light" @onclick="GoBack">
+            ← Quay lại
+        </button>
+    </div>
+
+    <div class="reader-create-card">
+        <div class="form-section-title">
+            Thông tin cá nhân
+        </div>
+
+        @if (!string.IsNullOrWhiteSpace(message))
+        {
+            <div class="alert alert-info">@message</div>
+        }
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Họ tên</label>
+                <input class="form-control custom-input"
+                       placeholder="Nhập họ tên độc giả"
+                       @bind="reader.FullName" />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Giới tính</label>
+                <select class="form-control custom-input" @bind="reader.Gender">
+                    <option value="">-- Chọn giới tính --</option>
+                    <option value="Nam">Nam</option>
+                    <option value="Nữ">Nữ</option>
+                    <option value="Khác">Khác</option>
+                </select>
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Ngày sinh</label>
+                <input class="form-control custom-input"
+                       type="date"
+                       @bind="reader.DateOfBirth" />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Số điện thoại</label>
+                <input class="form-control custom-input"
+                       placeholder="Nhập số điện thoại"
+                       @bind="reader.Phone" />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Email</label>
+                <input class="form-control custom-input"
+                       placeholder="Nhập email"
+                       @bind="reader.Email" />
+            </div>
+
+            <div class="col-md-6 mb-3">
+                <label class="form-label">Trạng thái</label>
+                <select class="form-control custom-input" @bind="reader.Status">
+                    <option value="Active">Hoạt động</option>
+                    <option value="Inactive">Ngưng hoạt động</option>
+                </select>
+            </div>
+
+            <div class="col-12 mb-3">
+                <label class="form-label">Địa chỉ</label>
+                <textarea class="form-control custom-input"
+                          rows="3"
+                          placeholder="Nhập địa chỉ"
+                          @bind="reader.Address">
+                </textarea>
+            </div>
+        </div>
+
+        <div class="reader-create-actions">
+            <button class="btn btn-primary px-4" @onclick="SaveReader">
+                @(IsEdit ? "Cập nhật độc giả" : "Lưu độc giả")
+            </button>
+
+            <button class="btn btn-outline-secondary px-4" @onclick="GoBack">
+                Hủy
+            </button>
+        </div>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int? ReaderId { get; set; }
+
+    private ReaderModel reader = new()
+    {
+        Status = "Active"
+    };
+
+    private string message = "";
+
+    private bool IsEdit => ReaderId.HasValue && ReaderId.Value > 0;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (IsEdit)
+        {
+            var result = await Http.GetFromJsonAsync<ReaderModel>($"api/readers/{ReaderId}");
+
+            if (result != null)
+            {
+                reader = result;
+            }
+        }
+    }
+
+    private async Task SaveReader()
+    {
+        if (string.IsNullOrWhiteSpace(reader.FullName))
+        {
+            message = "Vui lòng nhập họ tên độc giả.";
+            return;
+        }
+
+        HttpResponseMessage response;
+
+        if (IsEdit)
+        {
+            response = await Http.PutAsJsonAsync($"api/readers/{ReaderId}", reader);
+        }
+        else
+        {
+            response = await Http.PostAsJsonAsync("api/readers", reader);
+        }
+
+        if (response.IsSuccessStatusCode)
+        {
+            Navigation.NavigateTo("/readers");
+        }
+        else
+        {
+            message = IsEdit
+                ? "Cập nhật độc giả thất bại."
+                : "Thêm độc giả thất bại.";
+        }
+    }
+
+    private void GoBack()
+    {
+        Navigation.NavigateTo("/readers");
+    }
+}

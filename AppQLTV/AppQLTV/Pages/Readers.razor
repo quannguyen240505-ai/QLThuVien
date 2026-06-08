@@ -1,0 +1,206 @@
+﻿@page "/readers"
+@using System.Net.Http.Json
+@using AppQLTV.Models.Library
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<PageTitle>Quản lý độc giả</PageTitle>
+
+<div class="reader-page">
+
+    <div class="reader-header">
+        <div>
+            <h2>📚 Quản lý độc giả</h2>
+            <p>Danh sách độc giả trong hệ thống thư viện</p>
+        </div>
+
+        <button class="btn btn-primary" @onclick="GoCreate">
+            + Thêm độc giả
+        </button>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="reader-stat-card">
+                <p>Tổng độc giả</p>
+                <h3>@readers.Count</h3>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="reader-stat-card">
+                <p>Đang hoạt động</p>
+                <h3>@readers.Count(x => x.Status == "Active")</h3>
+            </div>
+        </div>
+
+        <div class="col-md-4">
+            <div class="reader-stat-card">
+                <p>Ngưng hoạt động</p>
+                <h3>@readers.Count(x => x.Status != "Active")</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="reader-toolbar">
+        <input class="form-control"
+               placeholder="Tìm kiếm theo tên, email, SĐT, địa chỉ..."
+               @bind="keyword"
+               @bind:event="oninput" />
+
+        <button class="btn btn-secondary" @onclick="SearchReaders">
+            Tìm kiếm
+        </button>
+
+        <button class="btn btn-outline-secondary" @onclick="LoadReaders">
+            Làm mới
+        </button>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="alert alert-info mt-3">@message</div>
+    }
+
+    <div class="reader-table-wrapper mt-3">
+        <table class="table table-hover reader-table">
+            <thead>
+                <tr>
+                    <th>Họ tên</th>
+                    <th>Giới tính</th>
+                    <th>Ngày sinh</th>
+                    <th>SĐT</th>
+                    <th>Email</th>
+                    <th>Địa chỉ</th>
+                    <th>Ngày tạo</th>
+                    <th>Trạng thái</th>
+                    <th>Thao tác</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (readers.Count == 0)
+                {
+                    <tr>
+                        <td colspan="9" class="text-center text-muted py-4">
+                            Không có độc giả nào.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var r in readers)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@r.FullName</strong>
+                            </td>
+
+                            <td>@r.Gender</td>
+
+                            <td>
+                                @(r.DateOfBirth?.ToString("dd/MM/yyyy") ?? "Chưa có")
+                            </td>
+
+                            <td>@r.Phone</td>
+
+                            <td>@r.Email</td>
+
+                            <td>@r.Address</td>
+
+                            <td>
+                                @(r.CreatedDate.ToString("dd/MM/yyyy"))
+                            </td>
+
+                            <td>
+                                @if (r.Status == "Active")
+                                {
+                                    <span class="badge bg-success">Hoạt động</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Ngưng</span>
+                                }
+                            </td>
+
+                            <td>
+                                <button class="btn btn-warning btn-sm me-1"
+                                        @onclick="() => GoEdit(r.ReaderId)">
+                                    Sửa
+                                </button>
+
+                                <button class="btn btn-danger btn-sm"
+                                        @onclick="() => DeleteReader(r.ReaderId)">
+                                    Xóa
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@code {
+    private List<ReaderModel> readers = new();
+    private string keyword = "";
+    private string message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadReaders();
+    }
+
+    private async Task LoadReaders()
+    {
+        var data = await Http.GetFromJsonAsync<List<ReaderModel>>("api/readers") ?? new();
+
+        readers = data
+            .OrderBy(r => r.CreatedDate)
+            .ThenBy(r => r.ReaderId)
+            .ToList();
+
+        keyword = "";
+        message = "";
+    }
+
+    private async Task SearchReaders()
+    {
+        if (string.IsNullOrWhiteSpace(keyword))
+        {
+            await LoadReaders();
+            return;
+        }
+
+        var data = await Http.GetFromJsonAsync<List<ReaderModel>>(
+            $"api/readers/search?keyword={Uri.EscapeDataString(keyword)}"
+        ) ?? new();
+
+        readers = data
+            .OrderBy(r => r.CreatedDate)
+            .ThenBy(r => r.ReaderId)
+            .ToList();
+    }
+
+    private void GoCreate()
+    {
+        Navigation.NavigateTo("/readers/create");
+    }
+
+    private void GoEdit(int id)
+    {
+        Navigation.NavigateTo($"/readers/create/{id}");
+    }
+
+    private async Task DeleteReader(int id)
+    {
+        var response = await Http.DeleteAsync($"api/readers/{id}");
+
+        message = response.IsSuccessStatusCode
+            ? "Xóa độc giả thành công."
+            : "Không thể xóa độc giả. Có thể độc giả đã có phiếu mượn.";
+
+        await LoadReaders();
+    }
+}

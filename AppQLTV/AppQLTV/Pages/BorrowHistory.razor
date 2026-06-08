@@ -1,0 +1,57 @@
+﻿@page "/borrow-history"
+@using System.Net.Http.Json
+@using AppQLTV.Models.Library
+@inject HttpClient Http
+
+<h3>Lịch sử mượn sách</h3>
+
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>ID phiếu</th>
+            <th>Độc giả</th>
+            <th>Sách</th>
+            <th>Số lượng</th>
+            <th>Ngày mượn</th>
+            <th>Ngày trả</th>
+            <th>Trạng thái</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in histories)
+        {
+            <tr>
+                <td>@item.BorrowTicketId</td>
+                <td>@item.ReaderName</td>
+
+                <td>
+                    @foreach (var detail in item.Details)
+                    {
+                        <div>@detail.BookTitle</div>
+                    }
+                </td>
+
+                <td>
+                    @foreach (var detail in item.Details)
+                    {
+                        <div>@detail.Quantity</div>
+                    }
+                </td>
+
+                <td>@item.BorrowDate.ToString("dd/MM/yyyy")</td>
+                <td>@(item.ReturnDate?.ToString("dd/MM/yyyy") ?? "Chưa trả")</td>
+                <td>@item.Status</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<BorrowHistoryModel> histories = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        histories = await Http.GetFromJsonAsync<List<BorrowHistoryModel>>("api/borrow/history") ?? new();
+    }
+}
