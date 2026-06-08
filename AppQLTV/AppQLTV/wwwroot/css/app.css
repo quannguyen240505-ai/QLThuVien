@@ -990,4 +990,344 @@ html, body {
             padding: 1rem;
         }
     }
+    /* Trang tìm kiếm hiện đại */
+    .search-container {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    .search-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+        .search-header h2 {
+            font-size: 2rem;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-header p {
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+    .search-bar-wrapper {
+        margin-bottom: 2rem;
+    }
+
+    .search-box {
+        display: flex;
+        max-width: 700px;
+        margin: 0 auto;
+        gap: 12px;
+    }
+
+        .search-box input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 48px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+            .search-box input:focus {
+                outline: none;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            }
+
+        .search-box button {
+            background: #3b82f6;
+            border: none;
+            padding: 0 28px;
+            border-radius: 48px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .search-box button:hover {
+                background: #2563eb;
+            }
+
+    .search-result-info {
+        text-align: center;
+        margin-top: 1rem;
+        color: #475569;
+        font-size: 0.9rem;
+    }
+    /* Grid sách */
+    .books-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.8rem;
+        margin-top: 1rem;
+    }
+    /* Card sách hiện đại */
+    .book-card {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .book-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 25px -12px rgba(0,0,0,0.15);
+        }
+
+    .book-cover {
+        height: 200px;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .placeholder-cover {
+        font-size: 4rem;
+        opacity: 0.5;
+    }
+
+    .book-details {
+        padding: 1.2rem 1.2rem 1.5rem;
+        flex: 1;
+    }
+
+    .book-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 0.4rem 0;
+        line-height: 1.3;
+    }
+
+    .book-author {
+        color: #475569;
+        font-size: 0.9rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .book-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-bottom: 0.8rem;
+    }
+
+    .category, .year {
+        background: #f8fafc;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+    }
+
+    .book-description {
+        font-size: 0.85rem;
+        color: #334155;
+        line-height: 1.4;
+        margin: 0.8rem 0;
+    }
+
+    .book-status {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 1rem 0 1.2rem;
+    }
+
+    .status-badge {
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .available .status-badge {
+        color: #10b981;
+    }
+
+    .unavailable .status-badge {
+        color: #ef4444;
+    }
+
+    .copies {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    .detail-button {
+        width: 100%;
+        background: #f1f5f9;
+        border: none;
+        padding: 10px;
+        border-radius: 40px;
+        font-weight: 500;
+        color: #1e293b;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .detail-button:hover {
+            background: #3b82f6;
+            color: white;
+        }
+    /* Loading spinner */
+    .loading-spinner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        gap: 1rem;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e2e8f0;
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    /* No results */
+    .no-results {
+        text-align: center;
+        padding: 3rem;
+        background: #f8fafc;
+        border-radius: 1.5rem;
+    }
+
+    .no-results-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .search-tips {
+        margin-top: 2.5rem;
+        padding: 1rem;
+        text-align: center;
+        font-size: 0.85rem;
+        color: #64748b;
+        border-top: 1px solid #e2e8f0;
+    }
+    /* Responsive */
+    @media (max-width: 640px) {
+        .search-box {
+            flex-direction: column;
+        }
+
+        .books-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .book-cover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .placeholder-cover {
+        font-size: 4rem;
+        color: white;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    .book-cover-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px 12px 0 0;
+    }
+    /* Cập nhật style cho phần ảnh bìa trong card sách */
+    .book-card-cover {
+        height: 220px;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px 12px 0 0;
+        overflow: hidden;
+    }
+
+    .book-cover-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .book-card:hover .book-cover-img {
+        transform: scale(1.02);
+    }
+
+    .placeholder-cover {
+        font-size: 4rem;
+        color: #adb5bd;
+    }
+    /* Khung chứa ảnh bìa ở trang chi tiết */
+    .book-cover-placeholder {
+        background: #f8f9fa;
+        border-radius: 20px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        aspect-ratio: 3 / 4; /* Tỉ lệ 3:4 giống sách thật */
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+        .book-cover-placeholder:hover {
+            transform: scale(1.02);
+        }
+    /* Ảnh bìa khi có URL */
+    .detail-cover-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Ảnh phủ kín khung, cắt đi phần thừa nhưng vẫn giữ tỷ lệ */
+        object-position: center;
+    }
+    /* Icon mặc định khi không có ảnh */
+    .book-cover-placeholder i {
+        font-size: 5rem;
+        color: #adb5bd;
+    }
 }

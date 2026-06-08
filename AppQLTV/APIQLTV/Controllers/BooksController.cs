@@ -95,5 +95,25 @@ namespace APIQLTV.Controllers
         {
             return _context.Books.Any(e => e.Id == id);
         }
+        // GET: api/books/search?keyword=... - Tìm kiếm sách
+        [HttpGet("search")]
+        [AllowAnonymous] // Cho phép cả người chưa đăng nhập
+        public async Task<ActionResult<IEnumerable<Book>>> SearchBooks([FromQuery] string keyword)
+        {
+            // 1. Nếu không có từ khóa thì trả về danh sách trống
+            if (string.IsNullOrWhiteSpace(keyword))
+                return Ok(new List<Book>());
+
+            // 2. Tìm kiếm theo Title, Author hoặc Category
+            var books = await _context.Books
+                .Where(b => b.IsActive &&
+                            (b.Title.Contains(keyword) ||
+                             b.Author.Contains(keyword) ||
+                             (b.Category != null && b.Category.Contains(keyword))))
+                .OrderBy(b => b.Title)
+                .ToListAsync();
+
+            return Ok(books);
+        }
     }
 }

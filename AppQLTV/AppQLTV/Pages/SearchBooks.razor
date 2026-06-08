@@ -1,0 +1,130 @@
+﻿@page "/search-books"
+@using AppQLTV.Models
+@inject HttpClient Http
+@inject NavigationManager Navigation
+
+<div class="search-container">
+    <div class="search-header">
+        <h2>📚 Tìm kiếm sách</h2>
+        <p>Khám phá hàng nghìn đầu sách trong thư viện</p>
+    </div>
+
+    <div class="search-bar-wrapper">
+        <div class="search-box">
+            <input type="text"
+                   @bind="searchKeyword"
+                   placeholder="Nhập tên sách, tác giả hoặc thể loại..."
+                   @onkeypress="EnterSearch"
+                   autofocus />
+            <button @onclick="PerformSearch">
+                <i class="oi oi-magnifying-glass"></i> Tìm kiếm
+            </button>
+        </div>
+        @if (!string.IsNullOrWhiteSpace(searchKeyword) && searchResults != null)
+        {
+            <div class="search-result-info">
+                🔎 Tìm thấy <strong>@searchResults.Count</strong> kết quả cho từ khóa "<strong>@searchKeyword</strong>"
+            </div>
+        }
+    </div>
+
+    @if (isSearching)
+    {
+        <div class="loading-spinner">
+            <div class="spinner"></div>
+            <span>Đang tìm kiếm...</span>
+        </div>
+    }
+    else if (searchResults != null && !searchResults.Any())
+    {
+        <div class="no-results">
+            <div class="no-results-icon">😔</div>
+            <h3>Không tìm thấy sách</h3>
+            <p>Thử lại với từ khóa khác hoặc kiểm tra chính tả.</p>
+        </div>
+    }
+    else if (searchResults != null)
+    {
+        <div class="books-grid">
+            @foreach (var book in searchResults)
+            {
+                <div class="book-card">
+                    <div class="book-cover">
+                        @if (!string.IsNullOrEmpty(book.CoverImageUrl))
+                        {
+                            <img src="@book.CoverImageUrl" alt="@book.Title" class="book-cover-img" loading="lazy"
+                                 onerror="this.onerror=null; this.style.display='none'; this.parentElement.querySelector('.placeholder-cover').style.display='flex';" />
+                            <div class="placeholder-cover" style="display: none;">📖</div>
+                        }
+                        else
+                        {
+                            <div class="placeholder-cover">📖</div>
+                        }
+                    </div>
+                    <div class="book-details">
+                        <h3 class="book-title">@book.Title</h3>
+                        <p class="book-author">✍️ @book.Author</p>
+                        <div class="book-meta">
+                            <span class="category">📂 @(string.IsNullOrEmpty(book.Category) ? "Chưa phân loại" : book.Category)</span>
+                            <span class="year">📅 @(book.PublishYear > 0 ? book.PublishYear.ToString() : "?")</span>
+                        </div>
+                        <p class="book-description">
+                            @(string.IsNullOrEmpty(book.Description) ? "Chưa có mô tả" : (book.Description.Length > 100 ? book.Description.Substring(0, 100) + "..." : book.Description))
+                        </p>
+                        <div class="book-status @(book.AvailableCopies > 0 ? "available" : "unavailable")">
+                            <span class="status-badge">@(book.AvailableCopies > 0 ? "✅ Còn sách" : "❌ Hết sách")</span>
+                            <span class="copies">(@book.AvailableCopies/@book.TotalCopies)</span>
+                        </div>
+                        <button class="detail-button" @onclick="() => ViewDetail(book.Id)">
+                            Xem chi tiết →
+                        </button>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <div class="search-tips">
+        💡 Gợi ý: Bạn có thể tìm theo tên sách, tác giả hoặc thể loại. Không cần dấu hay viết hoa.
+    </div>
+</div>
+
+@code {
+    private string searchKeyword = "";
+    private List<Book>? searchResults = null;
+    private bool isSearching = false;
+
+    private async Task PerformSearch()
+    {
+        if (string.IsNullOrWhiteSpace(searchKeyword))
+        {
+            searchResults = null;
+            return;
+        }
+
+        isSearching = true;
+        try
+        {
+            searchResults = await Http.GetFromJsonAsync<List<Book>>($"api/books/search?keyword={Uri.EscapeDataString(searchKeyword)}");
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Lỗi tìm kiếm: {ex.Message}");
+            searchResults = new List<Book>();
+        }
+        finally
+        {
+            isSearching = false;
+        }
+    }
+
+    private void EnterSearch(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") PerformSearch();
+    }
+
+    private void ViewDetail(int bookId)
+    {
+        Navigation.NavigateTo($"/book-detail/{bookId}");
+    }
+}

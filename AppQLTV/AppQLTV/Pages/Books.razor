@@ -28,7 +28,14 @@
             {
                 <div class="book-card">
                     <div class="book-card-cover">
-                        <i class="bi bi-journal-bookmark-fill"></i>
+                        @if (!string.IsNullOrEmpty(book.CoverImageUrl))
+                        {
+                            <img src="@book.CoverImageUrl" alt="@book.Title" class="book-cover-img" />
+                        }
+                        else
+                        {
+                            <div class="placeholder-cover">📖</div>
+                        }
                     </div>
                     <div class="book-card-body">
                         <div class="book-title">@book.Title</div>
@@ -76,19 +83,5 @@
     private void ViewDetail(int bookId)
     {
         Navigation.NavigateTo($"/book-detail/{bookId}");
-    }
-
-    public class Book
-    {
-        public int Id { get; set; }
-        public string Title { get; set; } = string.Empty;
-        public string Author { get; set; } = string.Empty;
-        public string? ISBN { get; set; }
-        public string? Publisher { get; set; }
-        public int PublishYear { get; set; }
-        public string? Category { get; set; }
-        public string? Description { get; set; }
-        public int TotalCopies { get; set; }
-        public int AvailableCopies { get; set; }
     }
 }

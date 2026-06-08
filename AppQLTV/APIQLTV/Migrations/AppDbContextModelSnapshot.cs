@@ -70,7 +70,7 @@ namespace APIQLTV.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("APIQLTV.Models.Book", b =>
@@ -118,7 +118,7 @@ namespace APIQLTV.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Books");
+                    b.ToTable("Books", (string)null);
                 });
 
             modelBuilder.Entity("APIQLTV.Models.BorrowDetail", b =>
@@ -146,7 +146,7 @@ namespace APIQLTV.Migrations
 
                     b.HasIndex("BorrowTicketId");
 
-                    b.ToTable("BorrowDetails");
+                    b.ToTable("BorrowDetails", (string)null);
                 });
 
             modelBuilder.Entity("APIQLTV.Models.BorrowTicket", b =>
@@ -180,7 +180,7 @@ namespace APIQLTV.Migrations
 
                     b.HasIndex("ReaderId");
 
-                    b.ToTable("BorrowTickets");
+                    b.ToTable("BorrowTickets", (string)null);
                 });
 
             modelBuilder.Entity("APIQLTV.Models.LibrarySetting", b =>
@@ -232,7 +232,7 @@ namespace APIQLTV.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("LibrarySettings");
+                    b.ToTable("LibrarySettings", (string)null);
                 });
 
             modelBuilder.Entity("APIQLTV.Models.Reader", b =>
@@ -273,7 +273,7 @@ namespace APIQLTV.Migrations
 
                     b.HasKey("ReaderId");
 
-                    b.ToTable("Readers");
+                    b.ToTable("Readers", (string)null);
                 });
 
             modelBuilder.Entity("APIQLTV.Models.BorrowDetail", b =>
