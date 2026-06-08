@@ -1,0 +1,125 @@
+﻿@page "/librarian/borrows"
+@using Microsoft.AspNetCore.Authorization
+@using System.Net.Http.Headers
+@inject HttpClient Http
+@inject IJSRuntime JS
+@attribute [Authorize(Roles = "Librarian,Admin")]
+
+<h3>🔄 Duyệt mượn/trả sách</h3>
+
+@if (isLoading)
+{
+    <div class="text-center"><div class="spinner-border"></div><p>Đang tải...</p></div>
+}
+else if (errorMessage != null)
+{
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> @errorMessage
+        <button class="btn btn-sm btn-outline-primary ms-3" @onclick="LoadBorrows">Thử lại</button>
+    </div>
+}
+else if (borrowTickets == null || !borrowTickets.Any())
+{
+    <div class="alert alert-info">Không có phiếu mượn nào đang chờ xử lý.</div>
+}
+else
+{
+    <table class="table table-bordered table-striped">
+        <thead class="table-dark">
+            <tr>
+                <th>Mã phiếu</th>
+                <th>Độc giả</th>
+                <th>Sách</th>
+                <th>Ngày mượn</th>
+                <th>Hạn trả</th>
+                <th>Trạng thái</th>
+                <th>Hành động</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ticket in borrowTickets)
+            {
+                <tr>
+                    <td>@ticket.Id</td>
+                    <td>@ticket.ReaderName</td>
+                    <td>@ticket.BookTitle</td>
+                    <td>@ticket.BorrowDate.ToShortDateString()</td>
+                    <td>@ticket.DueDate.ToShortDateString()</td>
+                    <td>@ticket.Status</td>
+                    <td>
+                        @if (ticket.Status == "Borrowing")
+                        {
+                            <button class="btn btn-sm btn-success" @onclick="() => ReturnBook(ticket.Id)">✅ Xác nhận trả</button>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<BorrowTicket>? borrowTickets;
+    private bool isLoading = true;
+    private string? errorMessage = null;
+
+    protected override async Task OnInitializedAsync() => await LoadBorrows();
+
+    private async Task LoadBorrows()
+    {
+        isLoading = true;
+        errorMessage = null;
+        try
+        {
+            var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+            if (!string.IsNullOrEmpty(token))
+                Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await Http.GetAsync("api/Borrow/pending");
+            if (response.IsSuccessStatusCode)
+                borrowTickets = await response.Content.ReadFromJsonAsync<List<BorrowTicket>>();
+            else if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+                errorMessage = "Phiên đăng nhập hết hạn. Vui lòng đăng nhập lại.";
+            else
+                errorMessage = $"Lỗi tải dữ liệu: {response.StatusCode}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Lỗi kết nối: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task ReturnBook(int id)
+    {
+        try
+        {
+            var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+            if (!string.IsNullOrEmpty(token))
+                Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+
+            var response = await Http.PutAsync($"api/Borrow/{id}/return", null);
+            if (response.IsSuccessStatusCode)
+                await LoadBorrows();
+            else
+                errorMessage = $"Không thể trả sách: {response.StatusCode}";
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Lỗi: {ex.Message}";
+        }
+    }
+
+    public class BorrowTicket
+    {
+        public int Id { get; set; }
+        public string ReaderName { get; set; } = string.Empty;
+        public string BookTitle { get; set; } = string.Empty;
+        public DateTime BorrowDate { get; set; }
+        public DateTime DueDate { get; set; }
+        public string Status { get; set; } = string.Empty;
+    }
+}

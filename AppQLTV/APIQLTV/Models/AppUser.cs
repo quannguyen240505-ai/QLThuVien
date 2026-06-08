@@ -14,6 +14,9 @@
         public string PasswordHash { get; set; } = string.Empty;
 
         public string Role { get; set; } = "Member";
+        public string AuthProvider { get; set; } = "Local";
+
+        public bool IsActive { get; set; } = true;
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 

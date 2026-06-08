@@ -1,0 +1,176 @@
+﻿@using System.Net.Http
+@using System.Net.Http.Json
+@using AppQLTV.Models.Admin
+
+<div class="admin-table-card">
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tài khoản</th>
+                <th>Gmail</th>
+                <th>Ngày sinh</th>
+                <th>Provider</th>
+                <th>Role</th>
+                <th>Trạng thái</th>
+                <th>Ngày tạo</th>
+                <th class="text-end">Thao tác</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            @if (!Users.Any())
+            {
+                <tr>
+                    <td colspan="9">
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            Không có tài khoản phù hợp.
+                        </div>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var user in Users)
+                {
+                    <tr>
+                        <td>#@user.Id</td>
+
+                        <td>
+                            <div class="account-cell">
+                                <div class="account-avatar">
+                                    @GetAvatar(user.Username)
+                                </div>
+
+                                <div>
+                                    <strong>@user.Username</strong>
+                                    <span>@user.Role</span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <td>@user.Gmail</td>
+
+                        <td>@user.DateOfBirth.ToString("dd/MM/yyyy")</td>
+
+                        <td>
+                            <span class="provider-badge @GetProviderClass(user.AuthProvider)">
+                                @GetProviderText(user.AuthProvider)
+                            </span>
+                        </td>
+
+                        <td>
+                            <select class="role-select"
+                                    value="@user.Role"
+                                    @onchange="async e => await OnChangeRole.InvokeAsync((user, e.Value?.ToString() ?? user.Role))">
+                                <option value="Member">Member</option>
+                                <option value="Librarian">Librarian</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                        </td>
+
+                        <td>
+                            @if (user.IsActive)
+                            {
+                                <span class="status-badge active">
+                                    <i class="bi bi-check-circle"></i>
+                                    Hoạt động
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="status-badge locked">
+                                    <i class="bi bi-lock"></i>
+                                    Đã khóa
+                                </span>
+                            }
+                        </td>
+
+                        <td>@user.CreatedAt.ToString("dd/MM/yyyy")</td>
+
+                        <td>
+                            <div class="action-group">
+                                <button class="icon-btn edit"
+                                        title="Sửa"
+                                        @onclick="() => OnEdit.InvokeAsync(user)">
+                                    <i class="bi bi-pencil-square"></i>
+                                </button>
+
+                                @if (GetProviderText(user.AuthProvider) == "Local")
+                                {
+                                    <button class="icon-btn password"
+                                            title="Reset mật khẩu"
+                                            @onclick="() => OnResetPassword.InvokeAsync(user)">
+                                        <i class="bi bi-key"></i>
+                                    </button>
+                                }
+
+                                <button class="icon-btn lock"
+                                        title="Khóa / mở khóa"
+                                        @onclick="() => OnToggleStatus.InvokeAsync(user)">
+                                    <i class="bi @(user.IsActive ? "bi-lock" : "bi-unlock")"></i>
+                                </button>
+
+                                <button class="icon-btn delete"
+                                        title="Xóa"
+                                        @onclick="() => OnDelete.InvokeAsync(user)">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+@code {
+    [Parameter] public IEnumerable<UserResponse> Users { get; set; } = new List<UserResponse>();
+
+    [Parameter] public EventCallback<UserResponse> OnEdit { get; set; }
+
+    [Parameter] public EventCallback<UserResponse> OnDelete { get; set; }
+
+    [Parameter] public EventCallback<UserResponse> OnToggleStatus { get; set; }
+
+    [Parameter] public EventCallback<UserResponse> OnResetPassword { get; set; }
+
+    [Parameter] public EventCallback<(UserResponse User, string NewRole)> OnChangeRole { get; set; }
+
+    private string GetAvatar(string username)
+    {
+        if (string.IsNullOrWhiteSpace(username))
+        {
+            return "U";
+        }
+
+        return username.Substring(0, 1).ToUpper();
+    }
+
+    private string GetProviderText(string provider)
+    {
+        if (string.IsNullOrWhiteSpace(provider))
+        {
+            return "Local";
+        }
+
+        return provider;
+    }
+
+    private string GetProviderClass(string provider)
+    {
+        if (string.IsNullOrWhiteSpace(provider))
+        {
+            return "local";
+        }
+
+        return provider switch
+        {
+            "Google" => "google",
+            "Local" => "local",
+            _ => "other"
+        };
+    }
+}
