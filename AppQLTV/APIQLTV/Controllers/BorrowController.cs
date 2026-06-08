@@ -230,6 +230,11 @@ namespace APIQLTV.Controllers
         [HttpGet("overdue")]
         public async Task<IActionResult> GetOverdueBooks()
         {
+            var setting = await _context.LibrarySettings.FirstOrDefaultAsync();
+
+            if (setting == null)
+                return BadRequest("Chưa cấu hình thông tin thư viện.");
+
             var today = DateTime.Now.Date;
 
             var data = await _context.BorrowTickets
@@ -242,20 +247,27 @@ namespace APIQLTV.Controllers
             var overdueBooks = data
                 .Where(t => t.DueDate.Date < today)
                 .OrderBy(t => t.DueDate)
-                .Select(t => new
+                .Select(t =>
                 {
-                    t.BorrowTicketId,
-                    ReaderName = t.Reader != null ? t.Reader.FullName : "",
-                    t.BorrowDate,
-                    t.DueDate,
-                    OverdueDays = (today - t.DueDate.Date).Days,
-                    FineAmount = (today - t.DueDate.Date).Days * 5000,
-                    Details = t.BorrowDetails.Select(d => new
+                    var overdueDays = (today - t.DueDate.Date).Days;
+                    var fineAmount = overdueDays * setting.OverdueFinePerDay;
+
+                    return new
                     {
-                        d.BookId,
-                        BookTitle = d.Book != null ? d.Book.Title : "",
-                        d.Quantity
-                    }).ToList()
+                        t.BorrowTicketId,
+                        ReaderName = t.Reader != null ? t.Reader.FullName : "",
+                        t.BorrowDate,
+                        t.DueDate,
+                        OverdueDays = overdueDays,
+                        FineAmount = fineAmount,
+                        FinePerDay = setting.OverdueFinePerDay,
+                        Details = t.BorrowDetails.Select(d => new
+                        {
+                            d.BookId,
+                            BookTitle = d.Book != null ? d.Book.Title : "",
+                            d.Quantity
+                        }).ToList()
+                    };
                 })
                 .ToList();
 
