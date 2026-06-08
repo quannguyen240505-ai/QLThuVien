@@ -1,5 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace APIQLTV.Models;
 
@@ -17,9 +19,8 @@ public class BorrowDetail
 
     public string Status { get; set; } = "Borrowing";
 
-    [ForeignKey("BorrowTicketId")]
+    [JsonIgnore]
     public BorrowTicket? BorrowTicket { get; set; }
-
-    [ForeignKey("BookId")]
+    [JsonIgnore]
     public Book? Book { get; set; }
 }

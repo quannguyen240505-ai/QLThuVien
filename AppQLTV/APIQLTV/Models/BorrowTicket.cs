@@ -1,30 +1,34 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace APIQLTV.Models
+namespace APIQLTV.Models;
+
+[Table("borrowtickets")] // tên bảng trong database (chữ thường)
+public class BorrowTicket
 {
-    [Table("borrowtickets")]
-    public class BorrowTicket
-    {
-        [Key]
-        public int BorrowTicketId { get; set; }
+    [Key]
+    public int BorrowTicketId { get; set; }
 
-        public int ReaderId { get; set; }
+    public int ReaderId { get; set; }
 
-        public Reader? Reader { get; set; }
+    public DateTime BorrowDate { get; set; }
 
-        public DateTime BorrowDate { get; set; } = DateTime.Now;
+    public DateTime DueDate { get; set; }
 
-        public DateTime DueDate { get; set; }
+    public DateTime? ReturnDate { get; set; }
 
-        public DateTime? ReturnDate { get; set; }
+    [MaxLength(20)]
+    public string? Status { get; set; }
 
-        public string? Status { get; set; }
+    public string? Note { get; set; }
 
-        public string? Note { get; set; }
-        public int FineAmount { get; set; }
-        public int OverdueDays { get; set; }
+    public int OverdueDays { get; set; }
 
-        public ICollection<BorrowDetail> BorrowDetails { get; set; } = new List<BorrowDetail>();
-    }
+    public int FineAmount { get; set; }
+
+    // Navigation properties
+    [ForeignKey("ReaderId")]
+    public virtual Reader? Reader { get; set; }
+
+    public virtual ICollection<BorrowDetail>? BorrowDetails { get; set; }
 }
