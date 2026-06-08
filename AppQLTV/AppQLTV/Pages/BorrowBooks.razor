@@ -33,7 +33,11 @@
 
             <div class="col-md-6 mb-3">
                 <label>Ngày hẹn trả</label>
-                <input class="form-control" type="date" @bind="borrow.DueDate" />
+                <input class="form-control"
+                       type="date"
+                       min="@DateTime.Now.ToString("yyyy-MM-dd")"
+                       max="@DateTime.Now.AddDays(14).ToString("yyyy-MM-dd")"
+                       @bind="borrow.DueDate" />
             </div>
 
             <div class="col-md-8 mb-3">
@@ -51,7 +55,11 @@
 
             <div class="col-md-4 mb-3">
                 <label>Số lượng</label>
-                <input class="form-control" type="number" min="1" @bind="bookItem.Quantity" />
+                <input class="form-control"
+                       type="number"
+                       min="1"
+                       max="5"
+                       @bind="bookItem.Quantity" />
             </div>
 
             <div class="col-12 mb-3">
@@ -85,7 +93,8 @@
                             <td>@book?.Title</td>
                             <td>@item.Quantity</td>
                             <td>
-                                <button class="btn btn-danger btn-sm" @onclick="() => RemoveBook(item)">
+                                <button class="btn btn-danger btn-sm"
+                                        @onclick="() => RemoveBook(item)">
                                     Xóa
                                 </button>
                             </td>
@@ -149,6 +158,14 @@
             return;
         }
 
+        var totalQuantity = borrow.Books.Sum(x => x.Quantity) + bookItem.Quantity;
+
+        if (totalQuantity > 5)
+        {
+            message = "Mỗi lần chỉ được mượn tối đa 5 quyển sách.";
+            return;
+        }
+
         var book = books.FirstOrDefault(x => x.Id == bookItem.BookId);
 
         if (book == null)
@@ -169,7 +186,11 @@
             Quantity = bookItem.Quantity
         });
 
-        bookItem = new BorrowBookItem { Quantity = 1 };
+        bookItem = new BorrowBookItem
+        {
+            Quantity = 1
+        };
+
         message = "";
     }
 
@@ -189,6 +210,12 @@
         if (borrow.Books.Count == 0)
         {
             message = "Vui lòng thêm ít nhất một sách.";
+            return;
+        }
+
+        if (borrow.DueDate.Date > DateTime.Now.Date.AddDays(14))
+        {
+            message = "Số ngày mượn tối đa là 14 ngày.";
             return;
         }
 

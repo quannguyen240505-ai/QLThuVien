@@ -1,0 +1,128 @@
+﻿@page "/overdue-books"
+@using System.Net.Http.Json
+@using AppQLTV.Models.Library
+@inject HttpClient Http
+
+<PageTitle>Sách quá hạn</PageTitle>
+
+<div class="overdue-page">
+    <div class="overdue-header">
+        <div>
+            <h2>⚠️ Sách quá hạn</h2>
+            <p>Danh sách phiếu mượn đã quá hạn trả sách</p>
+        </div>
+
+        <button class="btn btn-light" @onclick="LoadOverdueBooks">
+            Làm mới
+        </button>
+    </div>
+
+    <div class="overdue-stats">
+        <div class="overdue-stat-card">
+            <span>Tổng phiếu quá hạn</span>
+            <strong>@overdueBooks.Count</strong>
+        </div>
+
+        <div class="overdue-stat-card">
+            <span>Tổng tiền phạt</span>
+            <strong>@overdueBooks.Sum(x => x.FineAmount).ToString("N0") VNĐ</strong>
+        </div>
+    </div>
+
+    @if (isLoading)
+    {
+        <div class="text-center mt-4">
+            <div class="spinner-border"></div>
+            <p>Đang tải...</p>
+        </div>
+    }
+    else if (!string.IsNullOrWhiteSpace(message))
+    {
+        <div class="alert alert-warning mt-3">@message</div>
+    }
+    else if (overdueBooks.Count == 0)
+    {
+        <div class="alert alert-success mt-3">
+            Hiện không có sách quá hạn.
+        </div>
+    }
+    else
+    {
+        <div class="overdue-list mt-3">
+            @foreach (var item in overdueBooks)
+            {
+                <div class="overdue-card">
+                    <div class="overdue-card-top">
+                        <div>
+                            <h5>@item.ReaderName</h5>
+                            <p>Mã phiếu: #@item.BorrowTicketId</p>
+                        </div>
+
+                        <span class="overdue-badge">
+                            Quá hạn @item.OverdueDays ngày
+                        </span>
+                    </div>
+
+                    <div class="overdue-info">
+                        <div>
+                            <span>Ngày mượn</span>
+                            <strong>@item.BorrowDate.ToString("dd/MM/yyyy")</strong>
+                        </div>
+
+                        <div>
+                            <span>Hạn trả</span>
+                            <strong>@item.DueDate.ToString("dd/MM/yyyy")</strong>
+                        </div>
+
+                        <div>
+                            <span>Tiền phạt</span>
+                            <strong>@item.FineAmount.ToString("N0") VNĐ</strong>
+                        </div>
+                    </div>
+
+                    <div class="overdue-books-box">
+                        <strong>Sách quá hạn</strong>
+                        <ul>
+                            @foreach (var detail in item.Details)
+                            {
+                                <li>@detail.BookTitle - SL: @detail.Quantity</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@code {
+    private List<OverdueBookModel> overdueBooks = new();
+    private bool isLoading = true;
+    private string message = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadOverdueBooks();
+    }
+
+    private async Task LoadOverdueBooks()
+    {
+        isLoading = true;
+        message = "";
+
+        try
+        {
+            overdueBooks =
+                await Http.GetFromJsonAsync<List<OverdueBookModel>>("api/Borrow/overdue")
+                ?? new();
+        }
+        catch (Exception ex)
+        {
+            message = $"Lỗi tải dữ liệu: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}

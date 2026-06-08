@@ -20,6 +20,16 @@ namespace APIQLTV.Controllers
         [HttpPost("request")]
         public async Task<IActionResult> SendBorrowRequest(BorrowRequest request)
         {
+            var totalQuantity = request.Books.Sum(x => x.Quantity);
+
+            if (totalQuantity > 5)
+                return BadRequest("Mỗi lần chỉ được mượn tối đa 5 quyển sách.");
+
+            var maxDueDate = DateTime.Now.Date.AddDays(14);
+
+            if (request.DueDate.Date > maxDueDate)
+                return BadRequest("Số ngày mượn tối đa là 14 ngày.");
+
             var reader = await _context.Readers.FindAsync(request.ReaderId);
 
             if (reader == null)
@@ -123,10 +133,18 @@ namespace APIQLTV.Controllers
                 return BadRequest("Phiếu này đã được trả trước đó.");
 
             if (ticket.Status == "Pending")
-                return BadRequest("Phiếu này chưa được duyệt, không thể trả sách.");
+                return BadRequest("Phiếu này chưa được duyệt.");
 
-            if (ticket.BorrowDetails == null)
-                return BadRequest("Phiếu mượn không có chi tiết sách.");
+            int overdueDays = 0;
+            int fineAmount = 0;
+
+            if (DateTime.Now.Date > ticket.DueDate.Date)
+            {
+                overdueDays =
+                    (DateTime.Now.Date - ticket.DueDate.Date).Days;
+
+                fineAmount = overdueDays * 5000;
+            }
 
             foreach (var detail in ticket.BorrowDetails)
             {
@@ -145,9 +163,13 @@ namespace APIQLTV.Controllers
 
             await _context.SaveChangesAsync();
 
-            return Ok(new { message = "Trả sách thành công." });
+            return Ok(new
+            {
+                message = "Trả sách thành công",
+                overdueDays,
+                fineAmount
+            });
         }
-
         // Lịch sử mượn
         [HttpGet("history")]
         public async Task<IActionResult> GetBorrowHistory()
@@ -194,6 +216,41 @@ namespace APIQLTV.Controllers
                 .ToListAsync();
 
             return Ok(result);
+        }
+        // sách quá hạn 
+        [HttpGet("overdue")]
+        public async Task<IActionResult> GetOverdueBooks()
+        {
+            var today = DateTime.Now.Date;
+
+            var data = await _context.BorrowTickets
+                .Include(t => t.Reader)
+                .Include(t => t.BorrowDetails)
+                .ThenInclude(d => d.Book)
+                .Where(t => t.Status == "Borrowing")
+                .ToListAsync();
+
+            var overdueBooks = data
+                .Where(t => t.DueDate.Date < today)
+                .OrderBy(t => t.DueDate)
+                .Select(t => new
+                {
+                    t.BorrowTicketId,
+                    ReaderName = t.Reader != null ? t.Reader.FullName : "",
+                    t.BorrowDate,
+                    t.DueDate,
+                    OverdueDays = (today - t.DueDate.Date).Days,
+                    FineAmount = (today - t.DueDate.Date).Days * 5000,
+                    Details = t.BorrowDetails.Select(d => new
+                    {
+                        d.BookId,
+                        BookTitle = d.Book != null ? d.Book.Title : "",
+                        d.Quantity
+                    }).ToList()
+                })
+                .ToList();
+
+            return Ok(overdueBooks);
         }
     }
 }
