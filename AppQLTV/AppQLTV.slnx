@@ -1,6 +1,4 @@
 <Solution>
   <Project Path="APIQLTV/APIQLTV.csproj" />
-  <Project Path="AppQLTV/AppQLTV.csproj">
-    <BuildDependency Project="APIQLTV/APIQLTV.csproj" />
-  </Project>
+  <Project Path="AppQLTV/AppQLTV.csproj" />
 </Solution>

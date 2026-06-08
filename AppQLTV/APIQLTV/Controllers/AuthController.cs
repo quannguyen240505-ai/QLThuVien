@@ -23,11 +23,7 @@ namespace APIQLTV.Controllers
         private readonly EmailService _emailService;
         private readonly IMemoryCache _cache;
 
-        public AuthController(
-            AppDbContext context,
-            IConfiguration configuration,
-            EmailService emailService,
-            IMemoryCache cache)
+        public AuthController(AppDbContext context, IConfiguration configuration, EmailService emailService, IMemoryCache cache)
         {
             _context = context;
             _configuration = configuration;
@@ -40,19 +36,25 @@ namespace APIQLTV.Controllers
         public async Task<ActionResult<AuthResponse>> Register(RegisterRequest request)
         {
             if (request.Password != request.ConfirmPassword)
+            {
                 return BadRequest("Mật khẩu xác nhận không khớp.");
+            }
 
             bool usernameExists = await _context.Users
                 .AnyAsync(u => u.Username == request.Username);
 
             if (usernameExists)
+            {
                 return BadRequest("Tên đăng nhập đã tồn tại.");
+            }
 
             bool gmailExists = await _context.Users
                 .AnyAsync(u => u.Gmail == request.Gmail);
 
             if (gmailExists)
+            {
                 return BadRequest("Gmail đã được sử dụng.");
+            }
 
             var user = new AppUser
             {
@@ -66,12 +68,6 @@ namespace APIQLTV.Controllers
 
             _context.Users.Add(user);
             await _context.SaveChangesAsync();
-
-            await CreateReaderIfNotExistsAsync(
-                fullName: request.Username,
-                email: request.Gmail,
-                dateOfBirth: request.DateOfBirth
-            );
 
             var tokenResult = CreateToken(user);
 
@@ -94,18 +90,23 @@ namespace APIQLTV.Controllers
                 .FirstOrDefaultAsync(u => u.Username == request.Username);
 
             if (user == null)
+            {
                 return BadRequest("Sai tài khoản hoặc mật khẩu.");
+            }
 
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(
                 request.Password,
                 user.PasswordHash
             );
-
             if (!user.IsActive)
+            {
                 return BadRequest("Tài khoản đã bị khóa.");
+            }
 
             if (!isPasswordValid)
+            {
                 return BadRequest("Sai tài khoản hoặc mật khẩu.");
+            }
 
             var tokenResult = CreateToken(user);
 
@@ -123,13 +124,13 @@ namespace APIQLTV.Controllers
         private TokenResult CreateToken(AppUser user)
         {
             var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.Username),
-                new Claim(ClaimTypes.Email, user.Gmail),
-                new Claim(ClaimTypes.Role, user.Role),
-                new Claim("DateOfBirth", user.DateOfBirth.ToString("yyyy-MM-dd"))
-            };
+    {
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Name, user.Username),
+        new Claim(ClaimTypes.Email, user.Gmail),
+        new Claim(ClaimTypes.Role, user.Role),
+        new Claim("DateOfBirth", user.DateOfBirth.ToString("yyyy-MM-dd"))
+    };
 
             var jwtKey = _configuration["Jwt:Key"];
             var jwtIssuer = _configuration["Jwt:Issuer"];
@@ -175,7 +176,9 @@ namespace APIQLTV.Controllers
                 .FirstOrDefaultAsync(u => u.Gmail == request.Gmail);
 
             if (user == null)
+            {
                 return BadRequest("Gmail không tồn tại trong hệ thống.");
+            }
 
             var random = new Random();
             string pin = random.Next(100000, 999999).ToString();
@@ -195,25 +198,37 @@ namespace APIQLTV.Controllers
         public async Task<IActionResult> ResetPassword(ResetPasswordRequest request)
         {
             if (request.NewPassword != request.ConfirmNewPassword)
+            {
                 return BadRequest("Mật khẩu xác nhận không khớp.");
+            }
 
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Gmail == request.Gmail);
 
             if (user == null)
+            {
                 return BadRequest("Gmail không tồn tại trong hệ thống.");
+            }
 
             if (user.IsResetPasswordPinUsed)
+            {
                 return BadRequest("Mã PIN đã được sử dụng.");
+            }
 
             if (string.IsNullOrWhiteSpace(user.ResetPasswordPin))
+            {
                 return BadRequest("Bạn chưa yêu cầu mã PIN.");
+            }
 
             if (user.ResetPasswordPinExpires == null || DateTime.Now > user.ResetPasswordPinExpires)
+            {
                 return BadRequest("Mã PIN đã hết hạn.");
+            }
 
             if (user.ResetPasswordPin != request.Pin)
+            {
                 return BadRequest("Mã PIN không đúng.");
+            }
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
 
@@ -250,29 +265,34 @@ namespace APIQLTV.Controllers
             var frontendSuccessUrl = _configuration["GoogleAuth:FrontendSuccessUrl"];
 
             if (string.IsNullOrWhiteSpace(frontendSuccessUrl))
+            {
                 return BadRequest("Chưa cấu hình FrontendSuccessUrl.");
+            }
+
 
             var result = await HttpContext.AuthenticateAsync("ExternalCookie");
 
             if (!result.Succeeded || result.Principal == null)
+            {
                 return Redirect($"{frontendSuccessUrl}?error=google_auth_failed");
+            }
 
             var gmail = result.Principal.FindFirst(ClaimTypes.Email)?.Value;
             var name = result.Principal.FindFirst(ClaimTypes.Name)?.Value;
 
             if (string.IsNullOrWhiteSpace(gmail))
+            {
                 return Redirect($"{frontendSuccessUrl}?error=email_not_found");
+            }
 
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Gmail == gmail);
 
             if (user == null)
             {
-                var username = await GenerateUniqueUsernameFromEmail(gmail);
-
                 user = new AppUser
                 {
-                    Username = username,
+                    Username = await GenerateUniqueUsernameFromEmail(gmail),
                     Gmail = gmail,
                     DateOfBirth = DateTime.Today,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
@@ -282,24 +302,11 @@ namespace APIQLTV.Controllers
 
                 _context.Users.Add(user);
                 await _context.SaveChangesAsync();
-
-                await CreateReaderIfNotExistsAsync(
-                    fullName: string.IsNullOrWhiteSpace(name) ? username : name,
-                    email: gmail,
-                    dateOfBirth: DateTime.Today
-                );
             }
-            else
-            {
-                await CreateReaderIfNotExistsAsync(
-                    fullName: string.IsNullOrWhiteSpace(name) ? user.Username : name,
-                    email: gmail,
-                    dateOfBirth: user.DateOfBirth
-                );
-            }
-
             if (!user.IsActive)
+            {
                 return Redirect($"{frontendSuccessUrl}?error=account_locked");
+            }
 
             var tokenResult = CreateToken(user);
 
@@ -333,18 +340,21 @@ namespace APIQLTV.Controllers
         public IActionResult ExchangeSocialCode(ExchangeSocialCodeRequest request)
         {
             if (string.IsNullOrWhiteSpace(request.Code))
+            {
                 return BadRequest("Mã đăng nhập không hợp lệ.");
+            }
 
             var cacheKey = $"social_login_{request.Code}";
 
             if (!_cache.TryGetValue(cacheKey, out AuthResponse? authResponse) || authResponse == null)
+            {
                 return BadRequest("Mã đăng nhập đã hết hạn hoặc không hợp lệ.");
+            }
 
             _cache.Remove(cacheKey);
 
             return Ok(authResponse);
         }
-
         private async Task<string> GenerateUniqueUsernameFromEmail(string email)
         {
             var baseUsername = email.Split('@')[0];
@@ -359,32 +369,6 @@ namespace APIQLTV.Controllers
 
             return username;
         }
-
-        private async Task CreateReaderIfNotExistsAsync(
-            string fullName,
-            string email,
-            DateTime dateOfBirth)
-        {
-            var readerExists = await _context.Readers
-                .AnyAsync(r => r.Email == email);
-
-            if (readerExists)
-                return;
-
-            var reader = new Reader
-            {
-                FullName = fullName,
-                Email = email,
-                Phone = "",
-                Address = "",
-                DateOfBirth = dateOfBirth,
-                Gender = "",
-                CreatedDate = DateTime.Now,
-                Status = "Active"
-            };
-
-            _context.Readers.Add(reader);
-            await _context.SaveChangesAsync();
-        }
     }
+
 }

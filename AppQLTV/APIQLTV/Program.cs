@@ -36,18 +36,11 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(
                 "https://localhost:7028",
-                "http://localhost:5246",
-                "http://localhost:4200"
+                "http://localhost:5246"
             )
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
-
-});
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("LibrarianOrAdmin", policy =>
-        policy.RequireRole("Librarian", "Admin"));
 });
 
 // ===== JWT AUTHENTICATION =====
@@ -127,7 +120,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("AllowBlazorClient");
-app.UseCors("AllowAngular");
 
 app.UseAuthentication();
 app.UseAuthorization();
