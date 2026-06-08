@@ -74,13 +74,41 @@
     }
     else
     {
-        <UserTable Users="FilteredUsers"
+        <UserTable Users="PagedUsers"
                    OnEdit="OpenEditForm"
                    OnDelete="DeleteUser"
                    OnToggleStatus="ToggleStatus"
                    OnResetPassword="OpenResetPassword"
                    OnChangeRole="QuickChangeRole" />
     }
+    @if (!isLoading && TotalPages > 1)
+{
+    <div class="pagination-wrapper">
+
+        <button class="page-btn"
+                disabled="@(currentPage == 1)"
+                @onclick="PreviousPage">
+            <i class="bi bi-chevron-left"></i>
+        </button>
+
+            @for (int i = 1; i <= TotalPages; i++)
+            {
+                int pageNumber = i;
+
+                <button class="page-btn @(pageNumber == currentPage ? "active" : "")"
+                        @onclick="() => GoToPage(pageNumber)">
+                    @pageNumber
+                </button>
+            }
+
+        <button class="page-btn"
+                disabled="@(currentPage == TotalPages)"
+                @onclick="NextPage">
+            <i class="bi bi-chevron-right"></i>
+        </button>
+
+    </div>
+}
 
     @if (showForm)
     {
@@ -124,6 +152,8 @@
     private string searchKeyword = "";
     private string roleFilter = "";
     private string statusFilter = "";
+    private int currentPage = 1;
+    private int pageSize = 5;
 
     private IEnumerable<UserResponse> FilteredUsers
     {
@@ -157,6 +187,42 @@
             }
 
             return query;
+        }
+    }
+
+    private int TotalItems => FilteredUsers.Count();
+
+    private int TotalPages =>
+        (int)Math.Ceiling((double)TotalItems / pageSize);
+
+    private IEnumerable<UserResponse> PagedUsers =>
+        FilteredUsers
+            .Skip((currentPage - 1) * pageSize)
+            .Take(pageSize);
+    
+    private void GoToPage(int pageNumber)
+    {
+        if (pageNumber < 1 || pageNumber > TotalPages)
+        {
+            return;
+        }
+
+        currentPage = pageNumber;
+    }
+
+    private void NextPage()
+    {
+        if (currentPage < TotalPages)
+        {
+            currentPage++;
+        }
+    }
+
+    private void PreviousPage()
+    {
+        if (currentPage > 1)
+        {
+            currentPage--;
         }
     }
 
