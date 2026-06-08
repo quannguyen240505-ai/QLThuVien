@@ -133,6 +133,20 @@ namespace APIQLTV.Controllers
             if (reader == null)
                 return NotFound("Không tìm thấy độc giả.");
 
+            var hasBorrowTickets = await _context.BorrowTickets
+                .AnyAsync(b => b.ReaderId == id);
+
+            if (hasBorrowTickets)
+            {
+                reader.Status = "Inactive";
+                await _context.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    message = "Độc giả đã có lịch sử mượn sách nên không thể xóa. Hệ thống đã chuyển sang trạng thái Inactive."
+                });
+            }
+
             _context.Readers.Remove(reader);
             await _context.SaveChangesAsync();
 

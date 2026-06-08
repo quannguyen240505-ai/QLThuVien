@@ -32,6 +32,9 @@ namespace APIQLTV.Controllers
             if (reader == null)
                 return NotFound("Tài khoản này chưa có thông tin độc giả.");
 
+            if (reader.Status != "Active")
+                return BadRequest("Tài khoản độc giả của bạn đang bị ngưng hoạt động, không thể gửi yêu cầu mượn sách.");
+
             if (request.Books == null || request.Books.Count == 0)
                 return BadRequest("Chưa chọn sách để mượn.");
 
