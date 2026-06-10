@@ -39,39 +39,39 @@ namespace APIQLTV.Controllers
                 return BadRequest("Chưa chọn sách để mượn.");
 
             var totalQuantity = request.Books.Sum(x => x.Quantity);
-
             if (totalQuantity > 5)
                 return BadRequest("Mỗi lần chỉ được mượn tối đa 5 quyển sách.");
 
-            if (request.DueDate.Date > DateTime.Now.Date.AddDays(14))
+            // Xử lý DueDate: nếu null thì mặc định +7 ngày, nếu có thì kiểm tra không quá 14 ngày
+            var dueDate = request.DueDate?.Date ?? DateTime.Now.AddDays(7).Date;
+            if (dueDate > DateTime.Now.Date.AddDays(14))
                 return BadRequest("Số ngày mượn tối đa là 14 ngày.");
 
             var ticket = new BorrowTicket
             {
                 ReaderId = reader.ReaderId,
                 BorrowDate = DateTime.Now,
-                DueDate = request.DueDate,
+                DueDate = dueDate,  // đã là DateTime, không nullable
                 Note = request.Note,
                 Status = "Pending"
             };
 
-                _context.BorrowTickets.Add(ticket);
-                await _context.SaveChangesAsync();  // Lưu để lấy BorrowTicketId
+            _context.BorrowTickets.Add(ticket);
+            await _context.SaveChangesAsync();
 
-                // Tạo chi tiết mượn
-                foreach (var item in request.Books)
+            foreach (var item in request.Books)
+            {
+                var detail = new BorrowDetail
                 {
-                    var detail = new BorrowDetail
-                    {
-                        BorrowTicketId = ticket.BorrowTicketId,
-                        BookId = item.BookId,
-                        Quantity = item.Quantity,
-                        Status = "Pending"
-                    };
-                    _context.BorrowDetails.Add(detail);
-                }
+                    BorrowTicketId = ticket.BorrowTicketId,
+                    BookId = item.BookId,
+                    Quantity = item.Quantity,
+                    Status = "Pending"
+                };
+                _context.BorrowDetails.Add(detail);
+            }
 
-                await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync();
 
             return Ok(new
             {
@@ -113,13 +113,12 @@ namespace APIQLTV.Controllers
             }
 
             ticket.Status = "Borrowing";
-
             await _context.SaveChangesAsync();
 
             return Ok(new { message = "Đã duyệt yêu cầu mượn sách." });
         }
 
-        // Trả sách
+        // Trả sách (dành cho thủ thư)
         [HttpPut("{id}/return")]
         public async Task<IActionResult> ReturnBooks(int id)
         {
@@ -141,21 +140,15 @@ namespace APIQLTV.Controllers
 
             if (DateTime.Now.Date > ticket.DueDate.Date)
             {
-                overdueDays =
-                    (DateTime.Now.Date - ticket.DueDate.Date).Days;
-
+                overdueDays = (DateTime.Now.Date - ticket.DueDate.Date).Days;
                 fineAmount = overdueDays * 5000;
             }
 
             foreach (var detail in ticket.BorrowDetails)
             {
                 var book = await _context.Books.FindAsync(detail.BookId);
-
                 if (book != null)
-                {
                     book.AvailableCopies += detail.Quantity;
-                }
-
                 detail.Status = "Returned";
             }
 
@@ -171,7 +164,8 @@ namespace APIQLTV.Controllers
                 fineAmount
             });
         }
-        // Lịch sử mượn
+
+        // Lịch sử mượn (tất cả)
         [HttpGet("history")]
         public async Task<IActionResult> GetBorrowHistory()
         {
@@ -218,17 +212,16 @@ namespace APIQLTV.Controllers
 
             return Ok(result);
         }
-        // sách quá hạn 
+
+        // Sách quá hạn
         [HttpGet("overdue")]
         public async Task<IActionResult> GetOverdueBooks()
         {
             var setting = await _context.LibrarySettings.FirstOrDefaultAsync();
-
             if (setting == null)
                 return BadRequest("Chưa cấu hình thông tin thư viện.");
 
             var today = DateTime.Now.Date;
-
             var data = await _context.BorrowTickets
                 .Include(t => t.Reader)
                 .Include(t => t.BorrowDetails)
@@ -243,7 +236,6 @@ namespace APIQLTV.Controllers
                 {
                     var overdueDays = (today - t.DueDate.Date).Days;
                     var fineAmount = overdueDays * setting.OverdueFinePerDay;
-
                     return new
                     {
                         t.BorrowTicketId,
@@ -266,18 +258,16 @@ namespace APIQLTV.Controllers
             return Ok(overdueBooks);
         }
 
-        //Trả sách theo độc giả (dành cho member)
+        // Sách đang mượn của độc giả đang đăng nhập
         [HttpGet("my-borrowing")]
         public async Task<IActionResult> GetMyBorrowingBooks()
         {
             var gmail = User.FindFirst(ClaimTypes.Email)?.Value;
-
             if (string.IsNullOrWhiteSpace(gmail))
                 return Unauthorized("Không tìm thấy thông tin người dùng.");
 
             var reader = await _context.Readers
                 .FirstOrDefaultAsync(r => r.Email == gmail);
-
             if (reader == null)
                 return NotFound("Không tìm thấy độc giả tương ứng với tài khoản.");
 
@@ -306,17 +296,16 @@ namespace APIQLTV.Controllers
             return Ok(result);
         }
 
+        // Thành viên tự trả sách
         [HttpPut("{id}/member-return")]
         public async Task<IActionResult> MemberReturnBook(int id)
         {
             var gmail = User.FindFirst(ClaimTypes.Email)?.Value;
-
             if (string.IsNullOrWhiteSpace(gmail))
                 return Unauthorized("Không tìm thấy thông tin người dùng.");
 
             var reader = await _context.Readers
                 .FirstOrDefaultAsync(r => r.Email == gmail);
-
             if (reader == null)
                 return NotFound("Không tìm thấy độc giả tương ứng với tài khoản.");
 
@@ -333,8 +322,8 @@ namespace APIQLTV.Controllers
                 return BadRequest("Phiếu này không ở trạng thái đang mượn.");
 
             var today = DateTime.Now.Date;
-            var overdueDays = 0;
-            var fineAmount = 0;
+            int overdueDays = 0;
+            int fineAmount = 0;
 
             if (ticket.DueDate.Date < today)
             {
@@ -345,10 +334,8 @@ namespace APIQLTV.Controllers
             foreach (var detail in ticket.BorrowDetails)
             {
                 var book = await _context.Books.FindAsync(detail.BookId);
-
                 if (book != null)
                     book.AvailableCopies += detail.Quantity;
-
                 detail.Status = "Returned";
             }
 
