@@ -959,3 +959,41 @@ code {
     .btn-borrow:hover {
         background-color: #218838;
     }
+/* Phân trang */
+.pagination-container {
+    margin-top: 2rem;
+}
+
+.pagination {
+    gap: 5px;
+}
+
+.page-item .page-link {
+    border-radius: 8px;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.page-item.active .page-link {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.page-item.disabled .page-link {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.page-link:hover:not(.disabled) {
+    background-color: #eef2ff;
+    border-color: #cbd5e1;
+}
+
+.page-info {
+    font-size: 0.85rem;
+    color: #64748b;
+}

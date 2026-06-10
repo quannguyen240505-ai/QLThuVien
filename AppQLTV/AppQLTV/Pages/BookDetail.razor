@@ -1,6 +1,7 @@
 ﻿@page "/book-detail/{id:int}"
 @page "/book-detail"
 @using AppQLTV.Models
+@using System.Net.Http.Headers
 @inject HttpClient Http
 @inject NavigationManager Navigation
 @inject IJSRuntime JS
@@ -40,6 +41,7 @@
     else if (book != null)
     {
         <div class="row g-4">
+            <!-- Cột ảnh bìa -->
             <div class="col-md-5 col-lg-4">
                 <div class="book-cover-card">
                     <div class="book-cover-placeholder">
@@ -69,6 +71,7 @@
                 </div>
             </div>
 
+            <!-- Cột thông tin chi tiết -->
             <div class="col-md-7 col-lg-8">
                 <div class="book-info-card">
                     <div class="d-flex flex-wrap justify-content-between align-items-start mb-3">
@@ -129,6 +132,77 @@
                 </div>
             </div>
         </div>
+
+        <!-- Phần đánh giá & bình luận -->
+        <div class="reviews-section mt-5">
+            <h4>📝 Đánh giá & Bình luận</h4>
+
+            @if (isLoggedIn)
+            {
+                <div class="card p-3 mb-4">
+                    <div class="form-group mb-2">
+                        <label>Đánh giá của bạn (1-5 sao)</label>
+                        <select class="form-control" @bind="newRating">
+                            <option value="5">⭐⭐⭐⭐⭐ 5 sao</option>
+                            <option value="4">⭐⭐⭐⭐ 4 sao</option>
+                            <option value="3">⭐⭐⭐ 3 sao</option>
+                            <option value="2">⭐⭐ 2 sao</option>
+                            <option value="1">⭐ 1 sao</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-2">
+                        <label>Bình luận</label>
+                        <textarea class="form-control" rows="3" @bind="newComment" placeholder="Chia sẻ cảm nhận của bạn về cuốn sách..."></textarea>
+                    </div>
+                    <button class="btn btn-primary" @onclick="SubmitReview" disabled="@isSubmitting">
+                        @(isSubmitting ? "Đang gửi..." : "Gửi đánh giá")
+                    </button>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info">
+                    <a href="/login">Đăng nhập</a> để đánh giá và bình luận về sách.
+                </div>
+            }
+
+            @if (reviews == null)
+            {
+                <div class="text-center">Đang tải bình luận...</div>
+            }
+            else if (!reviews.Any())
+            {
+                <div class="text-muted">Chưa có bình luận nào. Hãy là người đầu tiên bình luận!</div>
+            }
+            else
+            {
+                <div class="reviews-list">
+                    @foreach (var review in reviews)
+                    {
+                        <div class="review-card card p-3 mb-3">
+                            <div class="d-flex justify-content-between">
+                                <strong>@review.UserName</strong>
+                                <span class="text-muted">@review.CreatedAt.ToString("dd/MM/yyyy HH:mm")</span>
+                            </div>
+                            <div class="rating">
+                                @for (int i = 1; i <= 5; i++)
+                                {
+                                    if (i <= review.Rating)
+                                    {
+                                        <span class="text-warning">★</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">☆</span>
+                                    }
+                                }
+                            </div>
+                            <p class="mt-2">@review.Comment</p>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
     }
 </div>
 
@@ -138,6 +212,13 @@
     private bool isLoading = true;
     private bool showNotFound = false;
     private bool noIdProvided = false;
+
+    // Biến cho phần bình luận
+    private List<BookReview> reviews = new();
+    private string newComment = "";
+    private int newRating = 5;
+    private bool isSubmitting = false;
+    private bool isLoggedIn = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -162,6 +243,76 @@
         {
             isLoading = false;
         }
+
+        await CheckLogin();
+        await LoadReviews();
+    }
+
+    private async Task SetAuthorizationHeader()
+    {
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            Http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        }
+    }
+
+    private async Task CheckLogin()
+    {
+        var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+        isLoggedIn = !string.IsNullOrEmpty(token);
+    }
+
+    private async Task LoadReviews()
+    {
+        if (id == null || id <= 0) return;
+        try
+        {
+            reviews = await Http.GetFromJsonAsync<List<BookReview>>($"api/BookReviews/book/{id}") ?? new();
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Lỗi tải bình luận: {ex.Message}");
+        }
+    }
+
+    private async Task SubmitReview()
+    {
+        if (string.IsNullOrWhiteSpace(newComment))
+        {
+            await JS.InvokeVoidAsync("alert", "Vui lòng nhập nội dung bình luận.");
+            return;
+        }
+
+        isSubmitting = true;
+        try
+        {
+            await SetAuthorizationHeader();
+
+            var request = new { BookId = id, Comment = newComment, Rating = newRating };
+            var response = await Http.PostAsJsonAsync("api/BookReviews", request);
+            if (response.IsSuccessStatusCode)
+            {
+                await JS.InvokeVoidAsync("alert", "Cảm ơn bạn đã đánh giá!");
+                newComment = "";
+                newRating = 5;
+                await LoadReviews(); // tải lại danh sách
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                await JS.InvokeVoidAsync("alert", $"Lỗi: {error}");
+            }
+        }
+        catch (Exception ex)
+        {
+            await JS.InvokeVoidAsync("alert", $"Lỗi kết nối: {ex.Message}");
+        }
+        finally
+        {
+            isSubmitting = false;
+        }
     }
 
     private void GoBack()
@@ -174,27 +325,11 @@
         Navigation.NavigateTo("/books");
     }
 
-    private async Task<bool> IsUserLoggedIn()
-    {
-        try
-        {
-            // Kiểm tra sự tồn tại của token trong localStorage
-            var token = await JS.InvokeAsync<string>("localStorage.getItem", "accessToken");
-            return !string.IsNullOrEmpty(token);
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     private async Task BorrowBook()
     {
-        // Kiểm tra đăng nhập bằng token
         var loggedIn = await IsUserLoggedIn();
         if (!loggedIn)
         {
-            // Lưu đường dẫn hiện tại để sau khi đăng nhập có thể quay lại
             await JS.InvokeVoidAsync("localStorage.setItem", "returnUrl", Navigation.Uri);
             await JS.InvokeVoidAsync("alert", "Vui lòng đăng nhập để mượn sách.");
             Navigation.NavigateTo("/login", true);
@@ -207,27 +342,31 @@
             return;
         }
 
-        // Gửi yêu cầu mượn sách (thay endpoint theo backend của bạn)
+        // Chuyển đến trang mượn sách (nếu có)
+        Navigation.NavigateTo($"/borrow-book?bookId={book!.Id}");
+    }
+
+    private async Task<bool> IsUserLoggedIn()
+    {
         try
         {
-            var borrowRequest = new { BookId = book!.Id };
-            var response = await Http.PostAsJsonAsync("api/borrow", borrowRequest);
-            if (response.IsSuccessStatusCode)
-            {
-                await JS.InvokeVoidAsync("alert", "Mượn sách thành công!");
-                // Tải lại thông tin sách để cập nhật số lượng
-                book = await Http.GetFromJsonAsync<Book>($"api/books/{id}");
-                StateHasChanged();
-            }
-            else
-            {
-                var error = await response.Content.ReadAsStringAsync();
-                await JS.InvokeVoidAsync("alert", $"Mượn sách thất bại: {error}");
-            }
+            var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
+            return !string.IsNullOrEmpty(token);
         }
-        catch (Exception ex)
+        catch
         {
-            await JS.InvokeVoidAsync("alert", $"Lỗi kết nối: {ex.Message}");
+            return false;
         }
+    }
+
+    // Model BookReview cho frontend (nên đặt trong Models riêng)
+    public class BookReview
+    {
+        public int ReviewId { get; set; }
+        public int BookId { get; set; }
+        public string Comment { get; set; } = string.Empty;
+        public int Rating { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public string UserName { get; set; } = string.Empty;
     }
 }

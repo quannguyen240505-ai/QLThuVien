@@ -13,6 +13,7 @@ namespace APIQLTV.Models
         public DbSet<Book> Books { get; set; }
         public DbSet<BorrowTicket> BorrowTickets { get; set; }
         public DbSet<BorrowDetail> BorrowDetails { get; set; }
-   
+        public DbSet<BookReview> BookReviews { get; set; }
+
     }
 }
