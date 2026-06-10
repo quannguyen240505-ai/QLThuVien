@@ -55,31 +55,23 @@ namespace APIQLTV.Controllers
                 Status = "Pending"
             };
 
-            _context.BorrowTickets.Add(ticket);
-            await _context.SaveChangesAsync();
+                _context.BorrowTickets.Add(ticket);
+                await _context.SaveChangesAsync();  // Lưu để lấy BorrowTicketId
 
-            foreach (var item in request.Books)
-            {
-                var book = await _context.Books.FindAsync(item.BookId);
-
-                if (book == null)
-                    return BadRequest($"Không tìm thấy sách ID = {item.BookId}");
-
-                if (book.AvailableCopies < item.Quantity)
-                    return BadRequest($"Sách {book.Title} không đủ số lượng.");
-
-                var detail = new BorrowDetail
+                // Tạo chi tiết mượn
+                foreach (var item in request.Books)
                 {
-                    BorrowTicketId = ticket.BorrowTicketId,
-                    BookId = item.BookId,
-                    Quantity = item.Quantity,
-                    Status = "Pending"
-                };
+                    var detail = new BorrowDetail
+                    {
+                        BorrowTicketId = ticket.BorrowTicketId,
+                        BookId = item.BookId,
+                        Quantity = item.Quantity,
+                        Status = "Pending"
+                    };
+                    _context.BorrowDetails.Add(detail);
+                }
 
-                _context.BorrowDetails.Add(detail);
-            }
-
-            await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync();
 
             return Ok(new
             {

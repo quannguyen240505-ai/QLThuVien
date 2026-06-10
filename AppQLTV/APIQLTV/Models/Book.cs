@@ -1,28 +1,50 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
-namespace APIQLTV.Models
+namespace APIQLTV.Models;
+
+[Table("books")]
+public class Book
 {
-    [Table("books")]
-    public class Book
-    {
+    [Key]
+    [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+    public int Id { get; set; }
 
-        public int Id { get; set; }
+    [Required]
+    [MaxLength(300)]
+    public string Title { get; set; } = string.Empty;
 
-        public string Title { get; set; } = string.Empty;
-        public string Author { get; set; } = string.Empty;
-        public string? ISBN { get; set; }
-        public string? Publisher { get; set; }
-        public int PublishYear { get; set; }
+    [Required]
+    [MaxLength(200)]
+    public string Author { get; set; } = string.Empty;
 
-        public string? Category { get; set; }  // Thể loại
-        public string? Description { get; set; }
+    [MaxLength(50)]
+    public string? ISBN { get; set; }
 
-        public int TotalCopies { get; set; } = 1;      // Tổng số bản
-        public int AvailableCopies { get; set; } = 1;  // Số bản còn lại
+    [MaxLength(150)]
+    public string? Publisher { get; set; }
 
-        public bool IsActive { get; set; } = true;
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
+    [Column("PublishYear")]
+    public int? PublishYear { get; set; }
 
-    }
+    [MaxLength(100)]
+    public string? Category { get; set; }
+
+    public string? Description { get; set; }
+
+    [Column("TotalCopies")]
+    public int TotalCopies { get; set; } = 1;
+
+    [Column("AvailableCopies")]
+    public int AvailableCopies { get; set; } = 1;
+
+    public bool IsActive { get; set; } = true;
+
+    public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+    [JsonIgnore]
+    public ICollection<BorrowDetail>? BorrowDetails { get; set; }
+
+    public string? CoverImageUrl { get; set; }
 }

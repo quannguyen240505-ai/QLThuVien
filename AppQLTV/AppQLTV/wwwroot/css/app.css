@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 html, body {
     font-family: "Segoe UI", Arial, sans-serif;
 }
@@ -1229,3 +1230,1004 @@ body.dark-mode-active {
         background: #2563eb !important;
         color: white !important;
     }
+=======
+@import url('app.css');
+
+html, body {
+    font-family: "Segoe UI", Arial, sans-serif;
+}
+
+h1:focus {
+    outline: none;
+}
+
+a, .btn-link {
+    color: #0071c1;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+.content {
+    padding-top: 1.1rem;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid red;
+}
+
+.validation-message {
+    color: red;
+}
+
+#blazor-error-ui {
+    color-scheme: light only;
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+.blazor-error-boundary {
+    background: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNTYiIGhlaWdodD0iNDkiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIG92ZXJmbG93PSJoaWRkZW4iPjxkZWZzPjxjbGlwUGF0aCBpZD0iY2xpcDAiPjxyZWN0IHg9IjIzNSIgeT0iNTEiIHdpZHRoPSI1NiIgaGVpZ2h0PSI0OSIvPjwvY2xpcFBhdGg+PC9kZWZzPjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMCkiIHRyYW5zZm9ybT0idHJhbnNsYXRlKC0yMzUgLTUxKSI+PHBhdGggZD0iTTI2My41MDYgNTFDMjY0LjcxNyA1MSAyNjUuODEzIDUxLjQ4MzcgMjY2LjYwNiA1Mi4yNjU4TDI2Ny4wNTIgNTIuNzk4NyAyNjcuNTM5IDUzLjYyODMgMjkwLjE4NSA5Mi4xODMxIDI5MC41NDUgOTIuNzk1IDI5MC42NTYgOTIuOTk2QzI5MC44NzcgOTMuNTEzIDI5MSA5NC4wODE1IDI5MSA5NC42NzgyIDI5MSA5Ny4wNjUxIDI4OS4wMzggOTkgMjg2LjYxNyA5OUwyNDAuMzgzIDk5QzIzNy45NjMgOTkgMjM2IDk3LjA2NTEgMjM2IDk0LjY3ODIgMjM2IDk0LjM3OTkgMjM2LjAzMSA5NC4wODg2IDIzNi4wODkgOTMuODA3MkwyMzYuMzM4IDkzLjAxNjIgMjM2Ljg1OCA5Mi4xMzE0IDI1OS40NzMgNTMuNjI5NCAyNTkuOTYxIDUyLjc5ODUgMjYwLjQwNyA1Mi4yNjU4QzI2MS4yIDUxLjQ4MzcgMjYyLjI5NiA1MSAyNjMuNTA2IDUxWk0yNjMuNTg2IDY2LjAxODNDMjYwLjczNyA2Ni4wMTgzIDI1OS4zMTMgNjcuMTI0NSAyNTkuMzEzIDY5LjMzNyAyNTkuMzEzIDY5LjYxMDIgMjU5LjMzMiA2OS44NjA4IDI1OS4zNzEgNzAuMDg4N0wyNjEuNzk1IDg0LjAxNjEgMjY1LjM4IDg0LjAxNjEgMjY3LjgyMSA2OS43NDc1QzI2Ny44NiA2OS43MzA5IDI2Ny44NzkgNjkuNTg3NyAyNjcuODc5IDY5LjMxNzkgMjY3Ljg3OSA2Ny4xMTgyIDI2Ni40NDggNjYuMDE4MyAyNjMuNTg2IDY2LjAxODNaTTI2My41NzYgODYuMDU0N0MyNjEuMDQ5IDg2LjA1NDcgMjU5Ljc4NiA4Ny4zMDA1IDI1OS43ODYgODkuNzkyMSAyNTkuNzg2IDkyLjI4MzcgMjYxLjA0OSA5My41Mjk1IDI2My41NzYgOTMuNTI5NSAyNjYuMTE2IDkzLjUyOTUgMjY3LjM4NyA5Mi4yODM3IDI2Ny4zODcgODkuNzkyMSAyNjcuMzg3IDg3LjMwMDUgMjY2LjExNiA4Ni4wNTQ3IDI2My41NzYgODYuMDU0N1oiIGZpbGw9IiNGRkU1MDAiIGZpbGwtcnVsZT0iZXZlbm9kZCIvPjwvZz48L3N2Zz4=) no-repeat 1rem/1.8rem, #b32121;
+    padding: 1rem 1rem 1rem 3.7rem;
+    color: white;
+}
+
+    .blazor-error-boundary::after {
+        content: "An error has occurred."
+    }
+
+.loading-progress {
+    position: absolute;
+    display: block;
+    width: 8rem;
+    height: 8rem;
+    inset: 20vh 0 auto 0;
+    margin: 0 auto 0 auto;
+}
+
+    .loading-progress circle {
+        fill: none;
+        stroke: #e0e0e0;
+        stroke-width: 0.6rem;
+        transform-origin: 50% 50%;
+        transform: rotate(-90deg);
+    }
+
+        .loading-progress circle:last-child {
+            stroke: #1b6ec2;
+            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
+            transition: stroke-dasharray 0.05s ease-in-out;
+        }
+
+.loading-progress-text {
+    position: absolute;
+    text-align: center;
+    font-weight: bold;
+    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
+}
+
+    .loading-progress-text:after {
+        content: var(--blazor-load-percentage-text, "Loading");
+    }
+
+code {
+    color: #c02d76;
+}
+
+.form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
+    color: var(--bs-secondary-color);
+    text-align: end;
+}
+
+.form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
+    text-align: start;
+}
+
+.card {
+    transition: 0.3s;
+}
+
+    .card:hover {
+        transform: translateY(-2px);
+    }
+
+.form-control-lg {
+    border-radius: 12px;
+}
+
+.btn-lg {
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+/* ========== CÁC TRANG QUẢN LÝ ========== */
+.reader-page, .reader-create-page, .borrow-manage-page, .manage-borrows-page, .overdue-page {
+    padding: 24px;
+    background: #f4f7fb;
+    min-height: 100vh;
+}
+
+/* ... (giữ nguyên toàn bộ CSS cho reader, borrow, manage, overdue từ file cũ của bạn) ... */
+/* Tôi đã lược bớt phần này để tránh quá dài, bạn hãy giữ nguyên các style cho reader, borrow, manage, overdue từ file cũ, vì chúng không thay đổi. */
+
+/* ========== TRANG DANH SÁCH SÁCH (CARD) ========== */
+.books-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+.books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.book-card {
+    background: #fff;
+    border-radius: 1.25rem;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+    .book-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.15);
+        border-color: transparent;
+    }
+
+.book-card-cover {
+    background: linear-gradient(135deg, #f5f7fa 0%, #e9edf2 100%);
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.book-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.placeholder-cover {
+    font-size: 4rem;
+    color: #94a3b8;
+}
+
+.book-card-body {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.book-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 0.5rem;
+    color: #0f172a;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.book-author {
+    font-size: 0.9rem;
+    color: #475569;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.book-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+}
+
+.book-category, .book-year {
+    background: #eef2ff;
+    color: #1e40af;
+    padding: 0.2rem 0.7rem;
+    border-radius: 2rem;
+    font-weight: 500;
+}
+
+.book-year {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.book-description {
+    font-size: 0.85rem;
+    color: #334155;
+    margin: 0.8rem 0;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.book-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid #eef2ff;
+}
+
+.book-available {
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+    .book-available.available {
+        color: #10b981;
+    }
+
+    .book-available.unavailable {
+        color: #ef4444;
+    }
+
+.book-total {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+/* ========== NÚT TRONG CARD (XEM CHI TIẾT & MƯỢN SÁCH) ========== */
+.card-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+}
+
+.btn-detail, .btn-borrow {
+    flex: 1;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btn-detail {
+    background-color: #6c757d;
+    color: white;
+}
+
+    .btn-detail:hover {
+        background-color: #5a6268;
+    }
+
+.btn-borrow {
+    background-color: #28a745;
+    color: white;
+}
+
+    .btn-borrow:hover {
+        background-color: #218838;
+    }
+
+/* Responsive */
+@media (max-width: 640px) {
+    .books-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .card-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .btn-detail, .btn-borrow {
+        width: 100%;
+    }
+}
+
+/* ========== TRANG CHI TIẾT SÁCH ========== */
+.book-detail-container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+.book-cover-card {
+    background: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.book-cover-frame {
+    background: #f8f9fa;
+    border-radius: 1rem;
+    overflow: hidden;
+    aspect-ratio: 3 / 4;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+    .book-cover-frame:hover {
+        transform: scale(1.02);
+    }
+
+.detail-book-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.default-cover-icon {
+    font-size: 5rem;
+    color: #adb5bd;
+}
+
+.book-info-card {
+    background: #fff;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    padding: 2rem;
+    height: 100%;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.book-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.3;
+}
+
+.book-author {
+    font-size: 1.2rem;
+    color: #475569;
+    margin-top: 0.5rem;
+}
+
+.info-item {
+    background: #f8fafc;
+    border-radius: 1rem;
+    padding: 0.75rem 1rem;
+}
+
+.info-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #64748b;
+    margin-bottom: 0.25rem;
+}
+
+.info-value {
+    font-weight: 500;
+    color: #1e293b;
+    font-size: 1rem;
+}
+
+.book-description {
+    background: #f8fafc;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    margin-top: 1rem;
+}
+
+    .book-description h5 {
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #0f172a;
+    }
+
+    .book-description p {
+        line-height: 1.6;
+        color: #334155;
+    }
+
+@media (max-width: 768px) {
+    .book-title {
+        font-size: 1.5rem;
+    }
+
+    .book-info-card {
+        padding: 1.25rem;
+    }
+
+    .book-cover-card {
+        padding: 1rem;
+    }
+}
+
+/* ========== TRANG TÌM KIẾM ========== */
+.search-container {
+    max-width: 1300px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+}
+
+.search-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+    .search-header h2 {
+        font-size: 2rem;
+        color: #1e293b;
+        margin-bottom: 0.5rem;
+    }
+
+    .search-header p {
+        color: #64748b;
+        font-size: 1rem;
+    }
+
+.search-bar-wrapper {
+    margin-bottom: 2rem;
+}
+
+.search-box {
+    display: flex;
+    max-width: 700px;
+    margin: 0 auto;
+    gap: 12px;
+}
+
+    .search-box input {
+        flex: 1;
+        padding: 14px 20px;
+        border: 2px solid #e2e8f0;
+        border-radius: 48px;
+        font-size: 1rem;
+        transition: all 0.2s;
+        background: white;
+    }
+
+        .search-box input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+
+    .search-box button {
+        background: #3b82f6;
+        border: none;
+        padding: 0 28px;
+        border-radius: 48px;
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .search-box button:hover {
+            background: #2563eb;
+        }
+
+.search-result-info {
+    text-align: center;
+    margin-top: 1rem;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+/* ========== TÁI SỬ DỤNG CÁC CLASS CHO GRID CARD ========== */
+/* Đã có ở trên, không cần viết lại */
+
+/* Loading spinner */
+.loading-spinner {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    gap: 1rem;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #e2e8f0;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+    /* Trang tìm kiếm hiện đại */
+    .search-container {
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
+    }
+
+    .search-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+        .search-header h2 {
+            font-size: 2rem;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-header p {
+            color: #64748b;
+            font-size: 1rem;
+        }
+
+    .search-bar-wrapper {
+        margin-bottom: 2rem;
+    }
+
+    .search-box {
+        display: flex;
+        max-width: 700px;
+        margin: 0 auto;
+        gap: 12px;
+    }
+
+        .search-box input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 48px;
+            font-size: 1rem;
+            transition: all 0.2s;
+            background: white;
+        }
+
+            .search-box input:focus {
+                outline: none;
+                border-color: #3b82f6;
+                box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+            }
+
+        .search-box button {
+            background: #3b82f6;
+            border: none;
+            padding: 0 28px;
+            border-radius: 48px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+            .search-box button:hover {
+                background: #2563eb;
+            }
+
+    .search-result-info {
+        text-align: center;
+        margin-top: 1rem;
+        color: #475569;
+        font-size: 0.9rem;
+    }
+    /* Grid sách */
+    .books-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 1.8rem;
+        margin-top: 1rem;
+    }
+    /* Card sách hiện đại */
+    .book-card {
+        background: white;
+        border-radius: 1rem;
+        overflow: hidden;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        transition: transform 0.25s ease, box-shadow 0.25s ease;
+        display: flex;
+        flex-direction: column;
+    }
+
+        .book-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 25px -12px rgba(0,0,0,0.15);
+        }
+
+    .book-cover {
+        height: 200px;
+        background: #f1f5f9;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+
+        .book-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .placeholder-cover {
+        font-size: 4rem;
+        opacity: 0.5;
+    }
+
+    .book-details {
+        padding: 1.2rem 1.2rem 1.5rem;
+        flex: 1;
+    }
+
+    .book-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #0f172a;
+        margin: 0 0 0.4rem 0;
+        line-height: 1.3;
+    }
+
+    .book-author {
+        color: #475569;
+        font-size: 0.9rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .book-meta {
+        display: flex;
+        gap: 1rem;
+        font-size: 0.8rem;
+        color: #64748b;
+        margin-bottom: 0.8rem;
+    }
+
+    .category, .year {
+        background: #f8fafc;
+        padding: 0.2rem 0.6rem;
+        border-radius: 20px;
+    }
+
+    .book-description {
+        font-size: 0.85rem;
+        color: #334155;
+        line-height: 1.4;
+        margin: 0.8rem 0;
+    }
+
+    .book-status {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 1rem 0 1.2rem;
+    }
+
+    .status-badge {
+        font-weight: 600;
+        font-size: 0.85rem;
+    }
+
+    .available .status-badge {
+        color: #10b981;
+    }
+
+    .unavailable .status-badge {
+        color: #ef4444;
+    }
+
+    .copies {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+
+    .detail-button {
+        width: 100%;
+        background: #f1f5f9;
+        border: none;
+        padding: 10px;
+        border-radius: 40px;
+        font-weight: 500;
+        color: #1e293b;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 8px;
+    }
+
+        .detail-button:hover {
+            background: #3b82f6;
+            color: white;
+        }
+    /* Loading spinner */
+    .loading-spinner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem;
+        gap: 1rem;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid #e2e8f0;
+        border-top-color: #3b82f6;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+    /* No results */
+    .no-results {
+        text-align: center;
+        padding: 3rem;
+        background: #f8fafc;
+        border-radius: 1.5rem;
+    }
+
+    .no-results-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .search-tips {
+        margin-top: 2.5rem;
+        padding: 1rem;
+        text-align: center;
+        font-size: 0.85rem;
+        color: #64748b;
+        border-top: 1px solid #e2e8f0;
+    }
+    /* Responsive */
+    @media (max-width: 640px) {
+        .search-box {
+            flex-direction: column;
+        }
+
+        .books-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .book-cover {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        height: 200px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px 12px 0 0;
+    }
+
+    .placeholder-cover {
+        font-size: 4rem;
+        color: white;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    .book-cover-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 12px 12px 0 0;
+    }
+    /* Cập nhật style cho phần ảnh bìa trong card sách */
+    .book-card-cover {
+        height: 220px;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 12px 12px 0 0;
+        overflow: hidden;
+    }
+
+    .book-cover-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .book-card:hover .book-cover-img {
+        transform: scale(1.02);
+    }
+
+    .placeholder-cover {
+        font-size: 4rem;
+        color: #adb5bd;
+    }
+    /* Khung chứa ảnh bìa ở trang chi tiết */
+    .book-cover-placeholder {
+        background: #f8f9fa;
+        border-radius: 20px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        aspect-ratio: 3 / 4; /* Tỉ lệ 3:4 giống sách thật */
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease;
+    }
+
+        .book-cover-placeholder:hover {
+            transform: scale(1.02);
+        }
+    /* Ảnh bìa khi có URL */
+    .detail-cover-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover; /* Ảnh phủ kín khung, cắt đi phần thừa nhưng vẫn giữ tỷ lệ */
+        object-position: center;
+    }
+    /* Icon mặc định khi không có ảnh */
+    .book-cover-placeholder i {
+        font-size: 5rem;
+        color: #adb5bd;
+    }
+}
+
+/* No results */
+.no-results {
+    text-align: center;
+    padding: 3rem;
+    background: #f8fafc;
+    border-radius: 1.5rem;
+}
+
+.no-results-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+.search-tips {
+    margin-top: 2.5rem;
+    padding: 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: #64748b;
+    border-top: 1px solid #e2e8f0;
+}
+
+/* Responsive search */
+@media (max-width: 640px) {
+    .search-box {
+        flex-direction: column;
+    }
+}
+.card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 12px;
+}
+
+.btn-detail, .btn-borrow {
+    flex: 1;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 30px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.2s;
+}
+
+.btn-detail {
+    background-color: #6c757d;
+    color: white;
+}
+
+    .btn-detail:hover {
+        background-color: #5a6268;
+    }
+
+.btn-borrow {
+    background-color: #28a745;
+    color: white;
+}
+
+    .btn-borrow:hover {
+        background-color: #218838;
+    }
+/* Phân trang */
+.pagination-container {
+    margin-top: 2rem;
+}
+
+.pagination {
+    gap: 5px;
+}
+
+.page-item .page-link {
+    border-radius: 8px;
+    color: #0f172a;
+    border: 1px solid #e2e8f0;
+    padding: 8px 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.page-item.active .page-link {
+    background-color: #3b82f6;
+    border-color: #3b82f6;
+    color: white;
+}
+
+.page-item.disabled .page-link {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+.page-link:hover:not(.disabled) {
+    background-color: #eef2ff;
+    border-color: #cbd5e1;
+}
+
+.page-info {
+    font-size: 0.85rem;
+    color: #64748b;
+}
+>>>>>>> fix-sang-submit
