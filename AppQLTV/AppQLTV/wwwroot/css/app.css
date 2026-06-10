@@ -2230,4 +2230,191 @@ code {
     font-size: 0.85rem;
     color: #64748b;
 }
->>>>>>> fix-sang-submit
+> > > > > > > fix-sang-submit
+
+
+/* FIX TEXT LOST IN DARK MODE - BORROWS + OVERDUE */
+.manage-borrows-page,
+.overdue-page {
+    color: #111827 !important;
+}
+
+    .manage-borrows-page *,
+    .overdue-page * {
+        opacity: 1 !important;
+    }
+
+    .manage-borrows-page .borrow-ticket-card,
+    .overdue-page .overdue-card,
+    .overdue-page .overdue-stat-card,
+    .manage-borrows-page .borrow-status-filter {
+        background: #ffffff !important;
+        color: #111827 !important;
+    }
+
+        .manage-borrows-page .borrow-ticket-card *,
+        .overdue-page .overdue-card *,
+        .overdue-page .overdue-stat-card *,
+        .manage-borrows-page .borrow-status-filter * {
+            color: #111827 !important;
+        }
+
+    .manage-borrows-page .ticket-info div,
+    .manage-borrows-page .ticket-books,
+    .overdue-page .overdue-info div,
+    .overdue-page .overdue-books-box {
+        background: #f8fafc !important;
+        color: #111827 !important;
+    }
+
+        .manage-borrows-page .ticket-info div *,
+        .manage-borrows-page .ticket-books *,
+        .overdue-page .overdue-info div *,
+        .overdue-page .overdue-books-box * {
+            color: #111827 !important;
+        }
+
+        .manage-borrows-page small,
+        .manage-borrows-page .ticket-top span,
+        .manage-borrows-page .ticket-books li span,
+        .overdue-page span,
+        .overdue-page p {
+            color: #475569 !important;
+        }
+
+    .manage-borrows-page h2,
+    .manage-borrows-page h5,
+    .manage-borrows-page strong,
+    .overdue-page h2,
+    .overdue-page h5,
+    .overdue-page strong {
+        color: #111827 !important;
+    }
+
+/* Giữ chữ trắng trong header gradient */
+.manage-borrows-header,
+.manage-borrows-header *,
+.overdue-header,
+.overdue-header * {
+    color: #ffffff !important;
+}
+
+/* Giữ màu badge */
+.status-pending {
+    background: #fff3cd !important;
+    color: #856404 !important;
+}
+
+.status-borrowing {
+    background: #cfe2ff !important;
+    color: #084298 !important;
+}
+
+.status-returned {
+    background: #d1e7dd !important;
+    color: #0f5132 !important;
+}
+
+.overdue-badge {
+    background: #f8d7da !important;
+    color: #842029 !important;
+}
+/* FIX READERS PAGE TEXT */
+.reader-page,
+.readers-page {
+    color: #111827 !important;
+}
+
+    .reader-page *,
+    .readers-page * {
+        opacity: 1 !important;
+    }
+
+    .reader-page .reader-header,
+    .readers-page .reader-header,
+    .reader-page .reader-toolbar,
+    .readers-page .reader-toolbar,
+    .reader-page .reader-table-wrapper,
+    .readers-page .reader-table-wrapper,
+    .reader-page .reader-stat-card,
+    .readers-page .reader-stat-card {
+        background: #ffffff !important;
+        color: #111827 !important;
+    }
+
+        .reader-page .reader-header *,
+        .readers-page .reader-header *,
+        .reader-page .reader-toolbar *,
+        .readers-page .reader-toolbar *,
+        .reader-page .reader-table-wrapper *,
+        .readers-page .reader-table-wrapper *,
+        .reader-page .reader-stat-card *,
+        .readers-page .reader-stat-card * {
+            color: #111827 !important;
+        }
+
+    .reader-page h1,
+    .readers-page h1,
+    .reader-page h2,
+    .readers-page h2,
+    .reader-page h3,
+    .readers-page h3,
+    .reader-page strong,
+    .readers-page strong,
+    .reader-page td,
+    .readers-page td {
+        color: #111827 !important;
+    }
+
+    .reader-page p,
+    .readers-page p,
+    .reader-page span,
+    .readers-page span {
+        color: #475569 !important;
+    }
+
+    /* Table readers */
+    .reader-page table,
+    .readers-page table {
+        background: #ffffff !important;
+        color: #111827 !important;
+    }
+
+        .reader-page table th,
+        .readers-page table th {
+            background: #0d6efd !important;
+            color: #ffffff !important;
+        }
+
+        .reader-page table td,
+        .readers-page table td {
+            background: #ffffff !important;
+            color: #111827 !important;
+            border-color: #e5e7eb !important;
+        }
+
+    /* Search box */
+    .reader-page input,
+    .readers-page input {
+        background: #0f172a !important;
+        color: #ffffff !important;
+    }
+
+        .reader-page input::placeholder,
+        .readers-page input::placeholder {
+            color: #cbd5e1 !important;
+        }
+
+    /* Buttons giữ màu */
+    .reader-page .btn,
+    .readers-page .btn {
+        opacity: 1 !important;
+    }
+
+    /* Badge trạng thái */
+    .reader-page .badge,
+    .readers-page .badge,
+    .reader-page .status-badge,
+    .readers-page .status-badge {
+        opacity: 1 !important;
+    }
