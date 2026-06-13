@@ -212,6 +212,52 @@ namespace APIQLTV.Controllers
 
             return Ok(result);
         }
+        // Lịch sử mượn/trả của member đang đăng nhập
+        [HttpGet("my-history")]
+        public async Task<IActionResult> GetMyBorrowHistory()
+        {
+            var gmail = User.FindFirst(ClaimTypes.Email)?.Value;
+
+            if (string.IsNullOrWhiteSpace(gmail))
+                return Unauthorized("Không tìm thấy thông tin người dùng.");
+
+            var reader = await _context.Readers
+                .FirstOrDefaultAsync(r => r.Email == gmail);
+
+            if (reader == null)
+                return NotFound("Không tìm thấy độc giả tương ứng với tài khoản.");
+
+            var history = await _context.BorrowTickets
+                .Include(t => t.Reader)
+                .Include(t => t.BorrowDetails)
+                .ThenInclude(d => d.Book)
+                .Where(t => t.ReaderId == reader.ReaderId)
+                .OrderByDescending(t => t.BorrowDate)
+                .Select(t => new
+                {
+                    t.BorrowTicketId,
+                    ReaderId = t.ReaderId,
+                    ReaderName = t.Reader != null ? t.Reader.FullName : "",
+                    t.BorrowDate,
+                    t.DueDate,
+                    t.ReturnDate,
+                    t.Status,
+                    t.Note,
+                    t.OverdueDays,
+                    t.FineAmount,
+                    Details = t.BorrowDetails.Select(d => new
+                    {
+                        d.BorrowDetailId,
+                        d.BookId,
+                        BookTitle = d.Book != null ? d.Book.Title : "",
+                        d.Quantity,
+                        d.Status
+                    }).ToList()
+                })
+                .ToListAsync();
+
+            return Ok(history);
+        }
 
         // Sách quá hạn
         [HttpGet("overdue")]
