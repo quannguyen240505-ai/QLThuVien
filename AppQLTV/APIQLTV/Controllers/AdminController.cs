@@ -204,6 +204,10 @@ namespace APIQLTV.Controllers
             {
                 return NotFound("Không tìm thấy tài khoản.");
             }
+            if (user.AuthProvider == "Google")
+            {
+                return BadRequest("Không thể reset mật khẩu cho tài khoản Google.");
+            }
 
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
             user.AuthProvider = "Local";

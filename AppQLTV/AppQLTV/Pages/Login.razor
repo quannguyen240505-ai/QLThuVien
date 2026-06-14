@@ -95,7 +95,17 @@
 
             if (!response.IsSuccessStatusCode)
             {
-                errorMessage = "Tên đăng nhập hoặc mật khẩu không đúng.";
+                var apiError = await response.Content.ReadAsStringAsync();
+
+                if (!string.IsNullOrWhiteSpace(apiError))
+                {
+                    errorMessage = apiError.Trim('"');
+                }
+                else
+                {
+                    errorMessage = "Tên đăng nhập hoặc mật khẩu không đúng.";
+                }
+
                 return;
             }
 
