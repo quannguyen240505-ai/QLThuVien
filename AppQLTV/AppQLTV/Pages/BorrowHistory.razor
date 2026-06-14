@@ -5,54 +5,166 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 
-<h3>Lịch sử mượn sách</h3>
+<PageTitle>Lịch sử mượn sách</PageTitle>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>ID phiếu</th>
-            <th>Độc giả</th>
-            <th>Sách</th>
-            <th>Số lượng</th>
-            <th>Ngày mượn</th>
-            <th>Ngày trả</th>
-            <th>Trạng thái</th>
-        </tr>
-    </thead>
+<div class="borrow-history-page">
+    <div class="history-header">
+        <div>
+            <h2>📖 Lịch sử mượn/trả sách</h2>
+            <p>Theo dõi thông tin mượn, trả sách trong hệ thống thư viện</p>
+        </div>
 
-    <tbody>
-        @foreach (var item in histories)
-        {
-            <tr>
-                <td>@item.BorrowTicketId</td>
-                <td>@item.ReaderName</td>
+        <button class="btn btn-light" @onclick="LoadHistories">
+            Làm mới
+        </button>
+    </div>
 
-                <td>
-                    @foreach (var detail in item.Details)
+    <div class="history-toolbar">
+        <input class="form-control"
+               placeholder="Tìm theo độc giả, tên sách, trạng thái..."
+               @bind="keyword"
+               @bind:event="oninput" />
+    </div>
+
+    <div class="history-table-wrapper">
+        <table class="table history-table">
+            <thead>
+                <tr>
+                    <th>Độc giả</th>
+                    <th>Sách</th>
+                    <th>Số lượng</th>
+                    <th>Ngày mượn</th>
+                    <th>Ngày trả</th>
+                    <th>Trạng thái</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @if (FilteredHistories.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="empty-row">
+                            Không có lịch sử mượn/trả phù hợp.
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in FilteredHistories)
                     {
-                        <div>@detail.BookTitle</div>
-                    }
-                </td>
+                        <tr>
+                            <td>
+                                <div class="reader-cell">
+                                    <div class="avatar">
+                                        @(string.IsNullOrWhiteSpace(item.ReaderName)
+                                            ? "?"
+                                            : item.ReaderName.Substring(0, 1).ToUpper())
+                                    </div>
 
-                <td>
-                    @foreach (var detail in item.Details)
-                    {
-                        <div>@detail.Quantity</div>
-                    }
-                </td>
+                                    <div>
+                                        <strong>@item.ReaderName</strong>
+                                        <small>Phiếu #@item.BorrowTicketId</small>
+                                    </div>
+                                </div>
+                            </td>
 
-                <td>@item.BorrowDate.ToString("dd/MM/yyyy")</td>
-                <td>@(item.ReturnDate?.ToString("dd/MM/yyyy") ?? "Chưa trả")</td>
-                <td>@item.Status</td>
-            </tr>
-        }
-    </tbody>
-</table>
+                            <td>
+                                <div class="book-list">
+                                    @foreach (var detail in item.Details)
+                                    {
+                                        <div class="book-item">
+                                            <span class="book-icon">📘</span>
+                                            <span>@detail.BookTitle</span>
+                                        </div>
+                                    }
+                                </div>
+                            </td>
+
+                            <td>
+                                @foreach (var detail in item.Details)
+                                {
+                                    <div class="quantity-row">
+                                        @detail.Quantity quyển
+                                    </div>
+                                }
+                            </td>
+
+                            <td>
+                                <strong>@item.BorrowDate.ToString("dd/MM/yyyy")</strong>
+                            </td>
+
+                            <td>
+                                @if (item.ReturnDate == null)
+                                {
+                                    <span class="not-returned">Chưa trả</span>
+                                }
+                                else
+                                {
+                                    <strong>@item.ReturnDate?.ToString("dd/MM/yyyy")</strong>
+                                }
+                            </td>
+
+                            <td>
+                                @if (item.Status == "Pending")
+                                {
+                                    <span class="status-badge pending">Chờ duyệt</span>
+                                }
+                                else if (item.Status == "Borrowing")
+                                {
+                                    <span class="status-badge borrowing">Đang mượn</span>
+                                }
+                                else if (item.Status == "Returned")
+                                {
+                                    <span class="status-badge returned">Đã trả</span>
+                                }
+                                else if (item.Status == "Rejected")
+                                {
+                                    <span class="status-badge rejected">Đã từ chối</span>
+                                }
+                                else
+                                {
+                                    <span class="status-badge other">@item.Status</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
 
 @code {
     private List<BorrowHistoryModel> histories = new();
+    private string keyword = "";
+
+    private List<BorrowHistoryModel> FilteredHistories
+    {
+        get
+        {
+            if (string.IsNullOrWhiteSpace(keyword))
+            {
+                return histories;
+            }
+
+            var key = keyword.Trim().ToLower();
+
+            return histories
+                .Where(x =>
+                    (x.ReaderName ?? "").ToLower().Contains(key) ||
+                    (x.Status ?? "").ToLower().Contains(key) ||
+                    x.Details.Any(d => (d.BookTitle ?? "").ToLower().Contains(key))
+                )
+                .ToList();
+        }
+    }
 
     protected override async Task OnInitializedAsync()
+    {
+        await LoadHistories();
+    }
+
+    private async Task LoadHistories()
     {
         var token = await JS.InvokeAsync<string>("localStorage.getItem", "authToken");
         var role = await JS.InvokeAsync<string>("localStorage.getItem", "role");
@@ -67,6 +179,13 @@
             ? "api/borrow/history"
             : "api/borrow/my-history";
 
-        histories = await Http.GetFromJsonAsync<List<BorrowHistoryModel>>(url) ?? new();
+        var data = await Http.GetFromJsonAsync<List<BorrowHistoryModel>>(url) ?? new();
+
+        histories = data
+            .OrderByDescending(x => x.BorrowDate)
+            .ThenByDescending(x => x.BorrowTicketId)
+            .ToList();
+
+        keyword = "";
     }
 }

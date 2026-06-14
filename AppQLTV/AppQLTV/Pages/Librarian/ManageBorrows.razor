@@ -129,6 +129,11 @@
                                     @onclick="() => ApproveBorrow(ticket.BorrowTicketId)">
                                 ✅ Duyệt mượn
                             </button>
+
+                            <button class="btn btn-danger"
+                                    @onclick="() => RejectBorrow(ticket.BorrowTicketId)">
+                                ❌ Từ chối
+                            </button>
                         }
 
                         @if (ticket.Status == "Borrowing")
@@ -227,6 +232,23 @@
         }
     }
 
+    private async Task RejectBorrow(int id)
+    {
+        await SetToken();
+
+        var response = await Http.PutAsync($"api/Borrow/{id}/reject", null);
+
+        if (response.IsSuccessStatusCode)
+        {
+            errorMessage = "✅ Đã từ chối yêu cầu mượn sách.";
+            await LoadBorrows();
+        }
+        else
+        {
+            errorMessage = await response.Content.ReadAsStringAsync();
+        }
+    }
+
     private async Task ReturnBook(int id)
     {
         await SetToken();
@@ -263,6 +285,7 @@
             "Pending" => "Chờ duyệt",
             "Borrowing" => "Đang mượn",
             "Returned" => "Đã trả",
+            "Rejected" => "Từ chối",
             _ => status
         };
     }
@@ -274,6 +297,7 @@
             "Pending" => "status-pending",
             "Borrowing" => "status-borrowing",
             "Returned" => "status-returned",
+            "Rejected" => "status-rejected",
             _ => "status-other"
         };
     }

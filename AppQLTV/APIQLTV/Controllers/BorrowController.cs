@@ -117,6 +117,31 @@ namespace APIQLTV.Controllers
 
             return Ok(new { message = "Đã duyệt yêu cầu mượn sách." });
         }
+        //từ chối mượn 
+        [HttpPut("{id}/reject")]
+        public async Task<IActionResult> RejectBorrowRequest(int id)
+        {
+            var ticket = await _context.BorrowTickets
+                .Include(t => t.BorrowDetails)
+                .FirstOrDefaultAsync(t => t.BorrowTicketId == id);
+
+            if (ticket == null)
+                return NotFound("Không tìm thấy phiếu mượn.");
+
+            if (ticket.Status != "Pending")
+                return BadRequest("Chỉ có thể từ chối phiếu đang chờ duyệt.");
+
+            ticket.Status = "Rejected";
+
+            foreach (var detail in ticket.BorrowDetails)
+            {
+                detail.Status = "Rejected";
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "Đã từ chối yêu cầu mượn sách." });
+        }
 
         // Trả sách (dành cho thủ thư)
         [HttpPut("{id}/return")]
