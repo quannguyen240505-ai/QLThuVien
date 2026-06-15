@@ -297,8 +297,7 @@ namespace APIQLTV.Controllers
                     DateOfBirth = DateTime.Today,
                     PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
                     Role = "Member",
-                    CreatedAt = DateTime.Now,
-                    AuthProvider="google"
+                    CreatedAt = DateTime.Now
                 };
 
                 _context.Users.Add(user);
