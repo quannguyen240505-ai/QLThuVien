@@ -41,7 +41,7 @@
             <i class="bi bi-info-square"></i> <span>Thông tin thư viện</span>
         </NavLink>
 
-        @if (isLoggedIn)
+        @if (isMember)
         {
             <div class="menu-title">Thành viên</div>
 
@@ -58,7 +58,7 @@
             </NavLink>
         }
 
-        @if (isLibrarianOrAdmin)
+        @if (isLibrarian)
         {
             <div class="menu-title">Thủ thư</div>
             <NavLink class="menu-link" href="librarian/books">
@@ -123,8 +123,9 @@
     private string? role = "";
     private bool isDarkMode = false;
 
+    private bool isMember => role == "Member";
+    private bool isLibrarian => role == "Librarian";
     private bool isAdmin => role == "Admin";
-    private bool isLibrarianOrAdmin => role == "Librarian" || role == "Admin";
 
 
    protected override async Task OnAfterRenderAsync(bool firstRender)
